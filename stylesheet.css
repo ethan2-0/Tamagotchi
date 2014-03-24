@@ -1,0 +1,14 @@
+div#image {
+	background-image: url(images/smileyface.png);
+	width: 100px;
+	height: 100px;
+}
+div.centered-div {
+	width: 80%;
+	margin-left: 10%;
+	height: 100%;
+}
+#mainframe {
+	width: 100%;
+	height: 100%;
+}
