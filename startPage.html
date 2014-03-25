@@ -11,10 +11,17 @@
 	</head>
 	<body>
 		<div id="centered-div">
-			<table>
+			<div class="title">Build your pet</div>
+			<div class="normal-margin">Choose some basic options to customize your pet.</div>
+			<br/>
+			<table class="normal-margin">
 				<tr>
 					<td>Pet Name:</td>
-					<td><input type="text" placeholder="Your pet's name"></input></td>
+					<td><input type="text" placeholder="Your pet's name" class="app-input"></input></td>
+				</tr>
+				<tr>
+					<td>Aging Speeed:</td>
+					<td><input type="range" class="app-input" min="1" max="60"></td>
 				</tr>
 			</table>
 		</div>
