@@ -34,3 +34,15 @@ body {
 	font-size: 20px;
 	font-weight: bold;
 }
+div.progressbar-back {
+	width: 200px;
+	height: 15px;
+	background-color: white;
+	border: 1px solid black;
+}
+div.progressbar-front {
+	height: 15px;
+	width: 100px;
+	background-color: green;
+	border-right: 1px solid black;
+}

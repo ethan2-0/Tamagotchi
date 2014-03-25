@@ -14,6 +14,7 @@
 	<body>
 		<div class="app-topbar">
 			<div class="app-title">Tamagotchi Pet</div>
+			<div class="app-button right" id="newpet">Create New</div>
 		</div>
 		<!--<iframe id="mainframe" src="startPage.html"></iframe>-->
 		<div class="app-page" data-page="creator">
@@ -36,6 +37,14 @@
 						} else if(!(/^[a-z0-9]*$/i.test(name))) {
 							error("Only alphanumeric names. No spaces.");
 						}
+						localStorage.removeItem("pet");
+						localStorage.setItem("pet", [
+							{"Health": 50},
+							{"Hunger": 50},
+							{"Happiness": 50},
+							{"Weight": 50},
+							{"Age": 0}
+						]);
 						localStorage.removeItem("petname");
 						localStorage.setItem("petname", name);
 						localStorage.removeItem("created");
@@ -43,10 +52,14 @@
 						App.load("main");
 					}
 				</script>
-				<div id="createButton" class="app-button">Create</div>
+				<table><tr>
+					<td><div id="createButton" class="app-button">Create</div></td>
+					<td style="padding-left: 20px;"><div id="cancel-create" class="app-button">Cancel</div></td>
+				</tr></table>
 			</div>
 		</div>
 		<div class="app-page" data-page="main">
+			<div class="title">Your pet</div>
 			<br/>
 			<br/>
 			<br/>
@@ -56,13 +69,32 @@
 				<div id="image"></div>
 				<span id="petname"></span>
 			</center>
+			<table id="pet-stats">
+				<tr>
+					<td>Health: </td>
+					<!-- <td><div class="progressbar-back"><div class="progressbar-front" id="health-bar"></div></div></td> -->
+					<td><div id="health-bar"></div></td>
+					<!-- <script type="text/javascript">
+						alert("Created")
+					</script> -->
+				</tr>
+			</table>
+
 		</div>
 
 
-
+		<!-- App.js -->
 		<script src="http://cdn.kik.com/app/1/app.js"></script>
+		<!-- JQuery -->
 		<script type="text/javascript" src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+		<script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+		<!-- My code -->
 		<script type="text/javascript">
+			$(function() {
+				$("#health-bar").progressbar({
+					value: 20
+				});
+			});
 			App.populator("creator", function(page) {
 				$(page)
 					.find("#createButton")
@@ -71,14 +103,35 @@
 					})
 				$(page)
 					.on("appShow", function() {
-						localStorage.setItem("created", false)
+						if(localStorage.getItem("created") == null || localStorage.getItem("created") == false || localStorage.getItem("created") == "false") {
+							EbyID("cancel-create").style.visibility = "hidden";
+						} else {
+							EbyID("cancel-create").style.visibility = "visible";
+						}
 					})
+					$(page)
+					.find("#cancel-create")
+					.on("click", function() {
+						App.back(function() {
+							//Do nothing
+						});
+					});
+				});
+			App.populator("main", function(page) {
+				//alert(document.getElementById("health-bar"));
+			})
+			$("#newpet")
+				.on("click", function() {
+					App.load("creator");
 				});
 			App.populator("main", function(page) {
 				$(page)
 					.on("appShow", function() {
 						EbyID("petname").innerHTML = localStorage.getItem("petname");
 					})});
+			if(localStorage.getItem("created") == null) {
+				localStorage.setItem("created", false)
+			}
 			if(localStorage.getItem("created") == true || localStorage.getItem("created") == "true") {
 				App.load("main");
 			} else {
