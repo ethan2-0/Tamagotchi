@@ -3,16 +3,87 @@
 	<head>
 		<title>Tamagotchi Pet</title>
 		<link rel="stylesheet" type="text/css" href="stylesheet.css"/>
-		<script src="http://cdn.kik.com/kik/1.0.3/kik.js"></script>
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-		<!-- Kik's App.js library -->
-		<script src="http://cdn.kik.com/app/1/app.js"></script>
+		<!-- App.js stylesheet -->
 		<link rel="stylesheet" href="http://cdn.kik.com/app/1/default.css"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+		<script type="text/javascript" src="script.js"></script>
+		<!-- Needed for Kik card functionality -->
+		<script src="http://cdn.kik.com/kik/1.0.3/kik.js"></script>
+		<!-- Kik's App.js library -->
 	</head>
 	<body>
 		<div class="app-topbar">
 			<div class="app-title">Tamagotchi Pet</div>
 		</div>
-		<iframe id="mainframe" src="startPage.html"></iframe>
+		<!--<iframe id="mainframe" src="startPage.html"></iframe>-->
+		<div class="app-page" data-page="creator">
+			<div class="centered-div">
+				<div class="title">Build your pet</div>
+				<div>Choose some basic options to customize your pet.</div>
+				<span id="error-message" style="color: red; font-weight: bold"></span>
+				<br/>
+				<table>
+					<tr>
+						<td>Pet Name:</td>
+						<td><input type="text" placeholder="Your pet's name" class="app-input" id="pet-name"></input></td>
+					</tr>
+				</table>
+				<script type="text/javascript">
+					function create() {
+						name = EbyID("pet-name").value;
+						if(name == "") {
+							error("Please enter a name.");
+						} else if(!(/^[a-z0-9]*$/i.test(name))) {
+							error("Only alphanumeric names. No spaces.");
+						}
+						localStorage.removeItem("petname");
+						localStorage.setItem("petname", name);
+						localStorage.removeItem("created");
+						localStorage.setItem("created", true);
+						App.load("main");
+					}
+				</script>
+				<div id="createButton" class="app-button">Create</div>
+			</div>
+		</div>
+		<div class="app-page" data-page="main">
+			<br/>
+			<br/>
+			<br/>
+			<br/>
+			<br/>
+			<center>
+				<div id="image"></div>
+				<span id="petname"></span>
+			</center>
+		</div>
+
+
+
+		<script src="http://cdn.kik.com/app/1/app.js"></script>
+		<script type="text/javascript" src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+		<script type="text/javascript">
+			App.populator("creator", function(page) {
+				$(page)
+					.find("#createButton")
+					.on("click", function() {
+						create();
+					})
+				$(page)
+					.on("appShow", function() {
+						localStorage.setItem("created", false)
+					})
+				});
+			App.populator("main", function(page) {
+				$(page)
+					.on("appShow", function() {
+						EbyID("petname").innerHTML = localStorage.getItem("petname");
+					})});
+			if(localStorage.getItem("created") == true || localStorage.getItem("created") == "true") {
+				App.load("main");
+			} else {
+				App.load("creator");
+			}
+		</script>
 	</body>
 </html>

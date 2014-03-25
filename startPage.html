@@ -3,14 +3,16 @@
 	<head>
 		<title>Tamagotchi Pet</title>
 		<link rel="stylesheet" type="text/css" href="stylesheet.css"/>
-		<script src="http://cdn.kik.com/kik/1.0.3/kik.js"></script>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+		<script type="text/javascript" src="script.js"></script>
+		<!-- Needed for Kik card functionality -->
+		<script src="http://cdn.kik.com/kik/1.0.3/kik.js"></script>
 		<!-- Kik's App.js library -->
 		<script src="http://cdn.kik.com/app/1/app.js"></script>
 		<link rel="stylesheet" href="http://cdn.kik.com/app/1/default.css"/>
 	</head>
 	<body>
-		<div id="centered-div">
+		<div class="centered-div">
 			<div class="title">Build your pet</div>
 			<div class="normal-margin">Choose some basic options to customize your pet.</div>
 			<br/>
@@ -21,7 +23,8 @@
 				</tr>
 				<tr>
 					<td>Aging Speeed:</td>
-					<td><input type="range" class="app-input" min="1" max="60"></td>
+					<td><input type="range" class="app-input" min="1" max="60" id="tickSpeed"></td>
+					<td><span id="rangeAmount" onInput="alert('change')" value=30>30</span> sec.</td>
 				</tr>
 			</table>
 		</div>

@@ -24,3 +24,13 @@ body {
 	margin-left: 20px;
 	margin-right: 10px;
 }
+#speed-selector {
+	background: linear-gradient(to right, rgb(0,0,255) 0%,rgb(255,0,0) 100%);
+	width: 175px;
+	height: 25px;
+	color: white;
+}
+#petname {
+	font-size: 20px;
+	font-weight: bold;
+}
