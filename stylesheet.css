@@ -46,3 +46,9 @@ div.progressbar-front {
 	background-color: green;
 	border-right: 1px solid black;
 }
+.topbar-icon {
+	
+}
+.topbar-icon .app-ios {
+	border-radius: 5px;
+}

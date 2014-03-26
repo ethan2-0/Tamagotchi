@@ -12,12 +12,11 @@
 		<!-- Kik's App.js library -->
 	</head>
 	<body>
-		<div class="app-topbar">
-			<div class="app-title">Tamagotchi Pet</div>
-			<div class="app-button right" id="newpet">Create New</div>
-		</div>
 		<!--<iframe id="mainframe" src="startPage.html"></iframe>-->
 		<div class="app-page" data-page="creator">
+			<div class="app-topbar">
+				<div class="app-title">Build a Pet</div>
+			</div>
 			<div class="centered-div">
 				<div class="title">Build your pet</div>
 				<div>Choose some basic options to customize your pet.</div>
@@ -37,19 +36,32 @@
 						} else if(!(/^[a-z0-9]*$/i.test(name))) {
 							error("Only alphanumeric names. No spaces.");
 						}
-						localStorage.removeItem("pet");
-						localStorage.setItem("pet", [
-							{"Health": 50},
+						/*localStorage.removeItem("pet");
+						pet = [
+							{"Health": 30},
 							{"Hunger": 50},
 							{"Happiness": 50},
 							{"Weight": 50},
 							{"Age": 0}
-						]);
+						];
+						alert(pet);
+						localStorage.setItem("pet", pet);*/
+						localStorage.removeItem("petHealth");
+						localStorage.setItem("petHealth", 30);
+						localStorage.removeItem("petHunger");
+						localStorage.setItem("petHunger", 30);
+						localStorage.removeItem("petHappiness");
+						localStorage.setItem("petHappiness", 30);
+						localStorage.removeItem("petWeight");
+						localStorage.setItem("petWeight", 30);
+						localStorage.removeItem("petAge");
+						localStorage.setItem("petAge", 30);
+
 						localStorage.removeItem("petname");
 						localStorage.setItem("petname", name);
 						localStorage.removeItem("created");
 						localStorage.setItem("created", true);
-						App.load("main");
+						loadPage("Pet");
 					}
 				</script>
 				<table><tr>
@@ -58,8 +70,14 @@
 				</tr></table>
 			</div>
 		</div>
-		<div class="app-page" data-page="main">
-			<div class="title">Your pet</div>
+		<div class="app-page" data-page="Pet">
+			<div class="app-topbar">
+				<table><tr>
+					<td><div class="app-title">Pet</div></td>
+					<td style="position: absolute; right: 100px;" class="topbar-icon"><img src="images/friendIconWhite.png"></img></td>
+					<td style="position: absolute; right: 50px;" class="topbar-icon" style="padding-top: 0px;"><img src="images/stablesIconWhite.png"></img></td>
+				</tr></table>
+			</div>
 			<br/>
 			<br/>
 			<br/>
@@ -72,16 +90,16 @@
 			<table id="pet-stats">
 				<tr>
 					<td>Health: </td>
-					<!-- <td><div class="progressbar-back"><div class="progressbar-front" id="health-bar"></div></div></td> -->
-					<td><div id="health-bar"></div></td>
-					<!-- <script type="text/javascript">
-						alert("Created")
-					</script> -->
+					<td><div class="progressbar-back"><div class="progressbar-front" id="health-bar"></div></div></td>
 				</tr>
 			</table>
 
 		</div>
-
+		<div class="app-page" data-page="stable">
+			<div class="app-topbar">
+				<div class="app-title">Stables</div>
+			</div>
+		</div>
 
 		<!-- App.js -->
 		<script src="http://cdn.kik.com/app/1/app.js"></script>
@@ -90,11 +108,15 @@
 		<script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
 		<!-- My code -->
 		<script type="text/javascript">
-			$(function() {
-				$("#health-bar").progressbar({
-					value: 20
-				});
-			});
+			function tick() {
+				//alert(document.getElementById("health-bar"));
+				//alert(App.getStack()[App.getStack().length - 1]);
+				if(getPageName() == "Pet") {
+					updateProgressBar(document.getElementById("health-bar"), localStorage.getItem("petHealth"));
+				}
+				setTimeout(tick, 1000);
+			}
+			setTimeout(tick, 1000);
 			App.populator("creator", function(page) {
 				$(page)
 					.find("#createButton")
@@ -122,9 +144,9 @@
 			})
 			$("#newpet")
 				.on("click", function() {
-					App.load("creator");
+					loadPage("Build a Pet");
 				});
-			App.populator("main", function(page) {
+			App.populator("Pet", function(page) {
 				$(page)
 					.on("appShow", function() {
 						EbyID("petname").innerHTML = localStorage.getItem("petname");
@@ -133,9 +155,9 @@
 				localStorage.setItem("created", false)
 			}
 			if(localStorage.getItem("created") == true || localStorage.getItem("created") == "true") {
-				App.load("main");
+				loadPage("Pet");
 			} else {
-				App.load("creator");
+				loadPage("creator");
 			}
 		</script>
 	</body>
