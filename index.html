@@ -1,164 +1,299 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<title>Tamagotchi Pet</title>
-		<link rel="stylesheet" type="text/css" href="stylesheet.css"/>
-		<!-- App.js stylesheet -->
-		<link rel="stylesheet" href="http://cdn.kik.com/app/1/default.css"/>
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-		<script type="text/javascript" src="script.js"></script>
-		<!-- Needed for Kik card functionality -->
-		<script src="http://cdn.kik.com/kik/1.0.3/kik.js"></script>
-		<!-- Kik's App.js library -->
-	</head>
-	<body>
-		<!--<iframe id="mainframe" src="startPage.html"></iframe>-->
-		<div class="app-page" data-page="creator">
-			<div class="app-topbar">
-				<div class="app-title">Build a Pet</div>
-			</div>
-			<div class="centered-div">
-				<div class="title">Build your pet</div>
-				<div>Choose some basic options to customize your pet.</div>
-				<span id="error-message" style="color: red; font-weight: bold"></span>
-				<br/>
-				<table>
-					<tr>
-						<td>Pet Name:</td>
-						<td><input type="text" placeholder="Your pet's name" class="app-input" id="pet-name"></input></td>
-					</tr>
-				</table>
-				<script type="text/javascript">
-					function create() {
-						name = EbyID("pet-name").value;
-						if(name == "") {
-							error("Please enter a name.");
-						} else if(!(/^[a-z0-9]*$/i.test(name))) {
-							error("Only alphanumeric names. No spaces.");
-						}
-						/*localStorage.removeItem("pet");
-						pet = [
-							{"Health": 30},
-							{"Hunger": 50},
-							{"Happiness": 50},
-							{"Weight": 50},
-							{"Age": 0}
-						];
-						alert(pet);
-						localStorage.setItem("pet", pet);*/
-						localStorage.removeItem("petHealth");
-						localStorage.setItem("petHealth", 30);
-						localStorage.removeItem("petHunger");
-						localStorage.setItem("petHunger", 30);
-						localStorage.removeItem("petHappiness");
-						localStorage.setItem("petHappiness", 30);
-						localStorage.removeItem("petWeight");
-						localStorage.setItem("petWeight", 30);
-						localStorage.removeItem("petAge");
-						localStorage.setItem("petAge", 30);
+    <head>
+        <title>Tamagotchi Pet</title>
+        <link rel="stylesheet" type="text/css" href="stylesheet.css"/>
+        <!-- App.js stylesheet -->
+        <link rel="stylesheet" href="http://cdn.kik.com/app/1/default.css"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+        <!-- My Javascript -->
+        <script type="text/javascript" src="script.js"></script>
+        <!-- Pet engine -->
+        <script type="text/javascript" src="petengine.js"></script>
+        <!-- Needed for Kik card functionality -->
+        <script src="http://cdn.kik.com/kik/1.0.3/kik.js"></script>
+    </head>
+    <body id="thebody">
+        <!-- F_C stables -->
+        <div class="app-page" data-page="stables">
+            <div class="app-topbar">
+                <table><tr>
+                    <td class="topbar-icon"><img id="back-image-stables" class="topbar-image" src="images/backArrow.png"></img></td>
+                    <td><div class="app-title">Stables</div></td>
+                    <td style="position: absolute; right: 50px;" class="topbar-icon"><img id="friends-image-stables" class="topbar-image" src="images/friendIconWhite.png"></img></td>
+                </tr></table>
+            </div>
+            <div id="stables-pets">
+                <div id="pet-display-1" class="pet-display">
+                </div>
+                <div id="pet-display-new" class="pet-display">
+                    <div id="add-pet" style="text-shadow: 0px 0px 10px white;">+</div>
+                </div>
+            </div>
+        </div>
+        <!-- F_C creator -->
+        <div class="app-page" data-page="creator">
+            <div class="app-topbar">
+                <div class="app-title">Build a Pet</div>
+            </div>
+            <div class="centered-div">
+                <br/>
+                <div>Choose some basic options to customize your pet.</div>
+                <span id="error-message" style="color: red; font-weight: bold"></span>
+                <br/>
+                <table>
+                    <tr>
+                        <td>Pet Name:</td>
+                        <td><input type="text" placeholder="Your pet's name" class="app-input" id="pet-name"></input></td>
+                    </tr>
+                </table>
+                <script type="text/javascript">
+                    function create() {
+                        name = EbyID("pet-name").value;
+                        if(name == "") {
+                            error("Please enter a name.");
+                        } else if(!(/^[a-z0-9]*$/i.test(name))) {
+                            error("Only alphanumeric names. No spaces.");
+                        }
+                        /*localStorage.removeItem("pet");
+                        pet = [
+                            {"Health": 30},
+                            {"Hunger": 50},
+                            {"Happiness": 50},
+                            {"Weight": 50},
+                            {"Age": 0}
+                        ];
+                        alert(pet);
+                        localStorage.setItem("pet", pet);*/
+                        localStorage.removeItem("petHealth");
+                        localStorage.setItem("petHealth", 50);
+                        localStorage.removeItem("petHunger");
+                        localStorage.setItem("petHunger", 30);
+                        localStorage.removeItem("petHappiness");
+                        localStorage.setItem("petHappiness", 30);
+                        localStorage.removeItem("petWeight");
+                        localStorage.setItem("petWeight", 30);
+                        localStorage.removeItem("petAge");
+                        localStorage.setItem("petAge", 0);
+                        localStorage.removeItem("petBirthday");
+                        localStorage.setItem("petBirthday", new Date());
 
-						localStorage.removeItem("petname");
-						localStorage.setItem("petname", name);
-						localStorage.removeItem("created");
-						localStorage.setItem("created", true);
-						loadPage("Pet");
-					}
-				</script>
-				<table><tr>
-					<td><div id="createButton" class="app-button">Create</div></td>
-					<td style="padding-left: 20px;"><div id="cancel-create" class="app-button">Cancel</div></td>
-				</tr></table>
-			</div>
-		</div>
-		<div class="app-page" data-page="Pet">
-			<div class="app-topbar">
-				<table><tr>
-					<td><div class="app-title">Pet</div></td>
-					<td style="position: absolute; right: 100px;" class="topbar-icon"><img src="images/friendIconWhite.png"></img></td>
-					<td style="position: absolute; right: 50px;" class="topbar-icon" style="padding-top: 0px;"><img src="images/stablesIconWhite.png"></img></td>
-				</tr></table>
-			</div>
-			<br/>
-			<br/>
-			<br/>
-			<br/>
-			<br/>
-			<center>
-				<div id="image"></div>
-				<span id="petname"></span>
-			</center>
-			<table id="pet-stats">
-				<tr>
-					<td>Health: </td>
-					<td><div class="progressbar-back"><div class="progressbar-front" id="health-bar"></div></div></td>
-				</tr>
-			</table>
+                        localStorage.removeItem("petname");
+                        localStorage.setItem("petname", name);
+                        localStorage.removeItem("created");
+                        localStorage.setItem("created", true);
 
-		</div>
-		<div class="app-page" data-page="stable">
-			<div class="app-topbar">
-				<div class="app-title">Stables</div>
-			</div>
-		</div>
+                        loadPage("Pet");
+                    }
+                </script>
+                <table><tr>
+                    <td><div id="createButton" class="app-button">Create</div></td>
+                    <td style="padding-left: 20px;"><div id="cancel-create" class="app-button">Cancel</div></td>
+                </tr></table>
+            </div>
+        </div>
+        <div class="app-page" data-page="Pet">
+            <div class="app-topbar">
+                <table><tr>
+                    <td class="topbar-icon"><img id="back-image-pet" class="topbar-image" src="images/backArrow.png"></img></td>
+                    <td><div class="app-title">Pet</div></td>
+                    <td style="position: absolute; right: 100px;" class="topbar-icon"><img id="friends-image-pet" class="topbar-image" src="images/friendIconWhite.png"></img></td>
+                    <td style="position: absolute; right: 50px;" class="topbar-icon" style="padding-top: 0px;"><img id="stables-image-pet" class="topbar-image" src="images/stablesIconWhite.png"></img></td>
+                </tr></table>
+            </div>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <center>
+                <div id="pet-image" class="pet-image happy"></div>
+                <span id="petname"></span>
+            </center>
+            <table id="pet-stats">
+                <tr>
+                    <td>Health: </td>
+                    <td><div class="progressbar-back"><div class="progressbar-front" id="health-bar"></div></div></td>
+                </tr>
+                <tr>
+                    <td>Hunger: </td>
+                    <td><div class="progressbar-back"><div class="progressbar-front" id="hunger-bar"></div></div></td>
+                </tr>
+                <tr>
+                    <td>Happiness: </td>
+                    <td><div class="progressbar-back"><div class="progressbar-front" id="happiness-bar"></div></div></td>
+                </tr>
+                <tr>
+                    <td>Weight: </td>
+                    <td><div class="progressbar-back"><div class="progressbar-front" id="weight-bar"></div></div></td>
+                </tr>
+                <tr>
+                    <td>Age: </td>
+                    <td><div id="pet-age"></div></td>
+                </tr>
+            </table>
 
-		<!-- App.js -->
-		<script src="http://cdn.kik.com/app/1/app.js"></script>
-		<!-- JQuery -->
-		<script type="text/javascript" src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
-		<script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
-		<!-- My code -->
-		<script type="text/javascript">
-			function tick() {
-				//alert(document.getElementById("health-bar"));
-				//alert(App.getStack()[App.getStack().length - 1]);
-				if(getPageName() == "Pet") {
-					updateProgressBar(document.getElementById("health-bar"), localStorage.getItem("petHealth"));
-				}
-				setTimeout(tick, 1000);
-			}
-			setTimeout(tick, 1000);
-			App.populator("creator", function(page) {
-				$(page)
-					.find("#createButton")
-					.on("click", function() {
-						create();
-					})
-				$(page)
-					.on("appShow", function() {
-						if(localStorage.getItem("created") == null || localStorage.getItem("created") == false || localStorage.getItem("created") == "false") {
-							EbyID("cancel-create").style.visibility = "hidden";
-						} else {
-							EbyID("cancel-create").style.visibility = "visible";
-						}
-					})
-					$(page)
-					.find("#cancel-create")
-					.on("click", function() {
-						App.back(function() {
-							//Do nothing
-						});
-					});
-				});
-			App.populator("main", function(page) {
-				//alert(document.getElementById("health-bar"));
-			})
-			$("#newpet")
-				.on("click", function() {
-					loadPage("Build a Pet");
-				});
-			App.populator("Pet", function(page) {
-				$(page)
-					.on("appShow", function() {
-						EbyID("petname").innerHTML = localStorage.getItem("petname");
-					})});
-			if(localStorage.getItem("created") == null) {
-				localStorage.setItem("created", false)
-			}
-			if(localStorage.getItem("created") == true || localStorage.getItem("created") == "true") {
-				loadPage("Pet");
-			} else {
-				loadPage("creator");
-			}
-		</script>
-	</body>
+        </div>
+        <div class="app-page" data-page="stables">
+            <div class="app-topbar">
+                <div class="app-title">Stables</div>
+            </div>
+        </div>
+
+        <!-- App.js -->
+        <script src="http://cdn.kik.com/app/1/app.js"></script>
+        <!-- JQuery -->
+        <script type="text/javascript" src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+        <script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+        <!-- My code -->
+        <script type="text/javascript">
+            petDisplayNumber = 0;
+            //Gets the class corresponding to the happiness "happiness" and health "health". Note that health is used just for the dead face.
+            function getHappiness(happiness, health) {
+                if(happiness == null) {
+                    happiness = localStorage.getItem("petHappiness");
+                }
+                if(health == null) {
+                    health = localStorage.getItem("petHealth");
+                }
+                if(health < 5) {
+                    return "dead";
+                }
+                if(happiness < 33) {
+                    return "unhappy"
+                }
+                if(happiness < 66) {
+                    return "undecided"
+                }
+                return "happy";
+            }
+            function creatorLater() {
+                loadPage("creator");
+            }
+            function populatePetDisplay(display, name, happiness, health) {
+                if(health == null) {
+                    health = localStorage.getItem("petHealth");
+                }
+                if(happiness == null) {
+                    happiness = localStorage.getItem("petHappiness");
+                }
+                s =  '<table><tr>';
+                s += '    <td class="pet-display-item"><div class="pet-image ' + getHappiness(happiness, health) + '"></div></td>\n'
+                s += '    <td class="pet-display-item"><div class="pet-display-name title">' + name + '</div></td>';
+                s += '</tr></table>';
+                display.innerHTML = s;
+            }
+            function tick() {
+                //alert(document.getElementById("health-bar"));
+                //alert(App.getStack()[App.getStack().length - 1]);
+                if(getPageName() == "Pet") {
+                    updateProgressBar(document.getElementById("health-bar"), localStorage.getItem("petHealth"));
+                    updateProgressBar(document.getElementById("hunger-bar"), localStorage.getItem("petHunger"));
+                    updateProgressBar(document.getElementById("happiness-bar"), localStorage.getItem("petHappiness"));
+                    updateProgressBar(document.getElementById("weight-bar"), localStorage.getItem("petWeight"), "black");
+                    EbyID("pet-age").innerHTML = "!!!Me need fixing!!!";//Math.floor((new Date().getTime() - localStorage.getItem("petBirthday").getTime()) / 60) + " minutes";
+                    EbyID("pet-image").setAttribute("class", "pet-image " + getHappiness());
+                }
+                setTimeout(tick, 1000);
+            }
+            setTimeout(tick, 1000);
+            App.populator("creator", function(page) {
+                $(page)
+                    .find("#createButton")
+                    .on("click", function() {
+                        create();
+                    })
+                $(page)
+                    .on("appShow", function() {
+                        if(localStorage.getItem("created") == null || localStorage.getItem("created") == false || localStorage.getItem("created") == "false") {
+                            EbyID("cancel-create").style.visibility = "hidden";
+                        } else {
+                            EbyID("cancel-create").style.visibility = "visible";
+                        }
+                    })
+                    $(page)
+                    .find("#cancel-create")
+                    .on("click", function() {
+                        App.back(function() {
+                            //Do nothing
+                        });
+                    });
+                });
+            App.populator("main", function(page) {
+                //alert(document.getElementById("health-bar"));
+            })
+            //F_C stables populator
+            App.populator("stables", function(page) {
+                $(page)
+                .on("appShow", function() {
+                    populatePetDisplay(EbyID("pet-display-1"), localStorage.getItem("petname"));
+                });
+                $(page)
+                    .find("#pet-display-1")
+                    .on("click", function() {
+                        loadPage("Pet");
+                    });
+                $(page)
+                    .find("#add-pet")
+                    .on("click", function() {
+                        EbyID("add-pet").setAttribute("style", "text-shadow: 0px 0px 20px black;");
+                        setTimeout(creatorLater, 125);
+                    });
+                $(page)
+                    .find("#back-image-stables")
+                    .on("click", function() {
+                        alert("Hello");
+                        App.back(function() {
+                            //Do nothing
+                        });
+                    });
+                $(page)
+                    .on("appShow", function() {
+                        EbyID("add-pet").setAttribute("style", "text-shadow: 0px 0px 10px white;");
+                    });
+            });
+            App.populator("Pet", function(page) {
+                $(page)
+                    .on("appShow", function() {
+                        EbyID("petname").innerHTML = localStorage.getItem("petname");
+                    })
+                $(page)
+                    .find("#stables-image-pet")
+                    .on("click", function() {
+                        alert("hi");
+                        loadPage("stables");
+                    })
+                $(page)
+                    .find("#back-image-pet")
+                    .on("click", function() {
+                        App.back(function() {
+                            //Do nothing
+                        });
+                    });
+            });
+            if(localStorage.getItem("created") == null) {
+                localStorage.setItem("created", false)
+            }
+            if(localStorage.getItem("created") == true || localStorage.getItem("created") == "true") {
+                loadPage("Pet");
+            } else {
+                loadPage("creator");
+            }
+        </script>
+        <!-- F_C IOS styles -->
+        <!-- Special stylesheet for IOS.
+             Note that the stylesheet will be declared at the end of the body. If there's any problems, that's why. -->
+        <script type="text/javascript">
+            theBody = EbyID("thebody");
+            if(theBody.getAttribute("class").indexOf("ios") != -1) {
+                document.write('<link rel="stylesheet" type="text/css" href="stylesheet_ios.css"/>\n');
+                all = document.getElementsByTagName("*");
+                for (i = 0, max = all.length; i < max; i++) {
+                    if(all[i].getAttribute("class") != null) {
+                        all[i].setAttribute("class", all[i].getAttribute("class") + " ios");
+                    }
+                }
+            }
+        </script>
+    </body>
 </html>
