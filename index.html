@@ -8,7 +8,6 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
         <!-- My Javascript -->
         <script type="text/javascript" src="script.js"></script>
-        <!-- Pet engine -->
         <script type="text/javascript" src="petengine.js"></script>
         <!-- Needed for Kik card functionality -->
         <script src="http://cdn.kik.com/kik/1.0.3/kik.js"></script>
@@ -54,6 +53,7 @@
                             error("Please enter a name.");
                         } else if(!(/^[a-z0-9]*$/i.test(name))) {
                             error("Only alphanumeric names. No spaces.");
+                            return;
                         }
                         /*localStorage.removeItem("pet");
                         pet = [
@@ -66,13 +66,13 @@
                         alert(pet);
                         localStorage.setItem("pet", pet);*/
                         localStorage.removeItem("petHealth");
-                        localStorage.setItem("petHealth", 50);
+                        localStorage.setItem("petHealth", 100);
                         localStorage.removeItem("petHunger");
-                        localStorage.setItem("petHunger", 30);
+                        localStorage.setItem("petHunger", 100);
                         localStorage.removeItem("petHappiness");
-                        localStorage.setItem("petHappiness", 30);
+                        localStorage.setItem("petHappiness", 100);
                         localStorage.removeItem("petWeight");
-                        localStorage.setItem("petWeight", 30);
+                        localStorage.setItem("petWeight", 50);
                         localStorage.removeItem("petAge");
                         localStorage.setItem("petAge", 0);
                         localStorage.removeItem("petBirthday");
@@ -106,40 +106,59 @@
             <br/>
             <br/>
             <br/>
-            <center>
-                <div id="pet-image" class="pet-image happy"></div>
+            <center id="pet-wrapper">
+                <div ><div id="pet-image" class="pet-image happy"></div></div>
                 <span id="petname"></span>
             </center>
-            <table id="pet-stats">
-                <tr>
-                    <td>Health: </td>
-                    <td><div class="progressbar-back"><div class="progressbar-front" id="health-bar"></div></div></td>
-                </tr>
-                <tr>
-                    <td>Hunger: </td>
-                    <td><div class="progressbar-back"><div class="progressbar-front" id="hunger-bar"></div></div></td>
-                </tr>
-                <tr>
-                    <td>Happiness: </td>
-                    <td><div class="progressbar-back"><div class="progressbar-front" id="happiness-bar"></div></div></td>
-                </tr>
-                <tr>
-                    <td>Weight: </td>
-                    <td><div class="progressbar-back"><div class="progressbar-front" id="weight-bar"></div></div></td>
-                </tr>
-                <tr>
-                    <td>Age: </td>
-                    <td><div id="pet-age"></div></td>
-                </tr>
-            </table>
-
+            <div id="other-petpage-stuff">
+                <table id="pet-stats">
+                    <tr>
+                        <td>Health: </td>
+                        <td><div class="progressbar-back"><div class="progressbar-front" id="health-bar"></div></div></td>
+                    </tr>
+                    <tr>
+                        <td>Hunger: </td>
+                        <td><div class="progressbar-back"><div class="progressbar-front" id="hunger-bar"></div></div></td>
+                    </tr>
+                    <tr>
+                        <td>Happiness: </td>
+                        <td><div class="progressbar-back"><div class="progressbar-front" id="happiness-bar"></div></div></td>
+                    </tr>
+                    <tr>
+                        <td>Weight: </td>
+                        <td><div class="progressbar-back"><div class="progressbar-front" id="weight-bar"></div></div></td>
+                    </tr>
+                    <tr>
+                        <td>Age: </td>
+                        <td><div id="pet-age"></div></td>
+                    </tr>
+                </table>
+                <br/>
+                <div class="app-button" id="dance-button">Dance</div>
+                <div class="app-button" id="jump-button">Exercise</div>
+            </div>
         </div>
+        <!-- F_C exercise page -->
+        <div class="app-page" data-page="exercise-page">
+             <div class="app-topbar">
+                <table><tr>
+                    <td class="topbar-icon"><img id="back-image-exercise" class="topbar-image" src="images/backArrow.png"></img></td>
+                    <td><div class="app-title" id="exercise-title">Pet</div></td>                    
+                </tr></table>
+            </div>
+            <center id="pet-wrapper">
+                <div id="pet-wrapper-exercise"><div id="pet-image-exercise" class="pet-image happy"></div></div>
+                <span id="petname"></span>
+            </center>
+            <div id="ground-exercise">
+            </div>
+        </div>
+        <!-- I removed this, replace it if something doesn't work right: </div> -->
         <div class="app-page" data-page="stables">
             <div class="app-topbar">
                 <div class="app-title">Stables</div>
             </div>
         </div>
-
         <!-- App.js -->
         <script src="http://cdn.kik.com/app/1/app.js"></script>
         <!-- JQuery -->
@@ -167,6 +186,32 @@
                 }
                 return "happy";
             }
+            jumpMomentum = 0;
+            jumpY = 100;
+            function doJump() {
+                for(i = 0; i < 300; i++) {
+                    setTimeout(jumpOnce, 200 + (i * 20));
+                }
+                //EbyID("petname").innerHTML = "hi";
+            }
+            function jumpOnce() {
+                //EbyID("petname").innerHTML = "hi2";
+                //EbyID("petname").innerHTML = jumpY;
+                jumpMomentum++;
+                jumpY += jumpMomentum;
+                if(jumpY >= 300) {
+                    jumpMomentum = -(Math.floor(Math.random() * 5) + 15);
+                }
+                EbyID("pet-wrapper-exercise").setAttribute("style", "padding-top: " + jumpY + "px;");
+                EbyID("ground-exercise").setAttribute("style", "margin-top: " + (300 - jumpY) + "px;");
+            }
+            function doDance() {
+                EbyID("other-petpage-stuff").setAttribute("style", "visibility: hidden;");
+                dance(EbyID("pet-wrapper"));
+                setTimeout(function() {
+                    EbyID("other-petpage-stuff").setAttribute("style", "");
+                }, 241 * 20);
+            }
             function creatorLater() {
                 loadPage("creator");
             }
@@ -191,9 +236,13 @@
                     updateProgressBar(document.getElementById("hunger-bar"), localStorage.getItem("petHunger"));
                     updateProgressBar(document.getElementById("happiness-bar"), localStorage.getItem("petHappiness"));
                     updateProgressBar(document.getElementById("weight-bar"), localStorage.getItem("petWeight"), "black");
-                    EbyID("pet-age").innerHTML = "!!!Me need fixing!!!";//Math.floor((new Date().getTime() - localStorage.getItem("petBirthday").getTime()) / 60) + " minutes";
+                    EbyID("pet-age").innerHTML = localStorage.getItem("petAge");//Math.floor((new Date().getTime() - localStorage.getItem("petBirthday").getTime()) / 60) + " minutes";
                     EbyID("pet-image").setAttribute("class", "pet-image " + getHappiness());
                 }
+                if(getPageName() == "exercise-page") {
+                    EbyID("pet-image-exercise").setAttribute("class", "pet-image " + getHappiness());
+                }
+                changeThePet();
                 setTimeout(tick, 1000);
             }
             setTimeout(tick, 1000);
@@ -270,6 +319,32 @@
                             //Do nothing
                         });
                     });
+                $(page)
+                    .find("#dance-button")
+                    .on("click", function() {
+                        doDance();
+                    });
+                $(page)
+                    .find("#jump-button")
+                    .on("click", function() {
+                        loadPage("exercise-page");
+                    });
+            });
+            App.populator("exercise-page", function(page) {
+                $(page)
+                    .find("#back-image-exercise")
+                    .on("click", function() {
+                        App.back(function() {
+                            //Do nothing
+                        });
+                    });
+                doJump();
+                setTimeout(function() {
+                    App.back(function() {
+                        //Do nothing
+                    });
+                }, 6100);
+                EbyID("petname").innerHTML = localStorage.getItem("petname");
             });
             if(localStorage.getItem("created") == null) {
                 localStorage.setItem("created", false)

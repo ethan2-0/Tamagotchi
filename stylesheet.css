@@ -2,6 +2,9 @@ div.pet-image {
     width: 100px;
     height: 100px;
 }
+#pet-stats {
+    /*position: absolute;*/
+}
 div.happy {
     background-image: url(images/smileyface.png);
 }
@@ -85,4 +88,8 @@ div.progressbar-front {
     font-size: 60px;
     margin-top: 20px;
     padding-right: 10px;
+}
+#ground-exercise {
+    background-color: rgb(120, 67, 54);
+    height: 400px;
 }
