@@ -35,8 +35,8 @@ body {
     font-size: 20px;
 }
 .normal-margin {
-    margin-left: 20px;
-    margin-right: 10px;
+    margin-left: 5px;
+    margin-right: 5px;
 }
 #speed-selector {
     background: linear-gradient(to right, rgb(0,0,255) 0%,rgb(255,0,0) 100%);
@@ -92,4 +92,8 @@ div.progressbar-front {
 #ground-exercise {
     background-color: rgb(120, 67, 54);
     height: 400px;
+}
+.food-image {
+    border: 1px solid black;
+    margin-right: 5px;
 }

@@ -4,15 +4,18 @@
         <title>Tamagotchi Pet</title>
         <link rel="stylesheet" type="text/css" href="stylesheet.css"/>
         <!-- App.js stylesheet -->
-        <link rel="stylesheet" href="http://cdn.kik.com/app/1/default.css"/>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+        <link rel="stylesheet" href="http://cdn.kik.com/app/1/default.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
         <!-- My Javascript -->
         <script type="text/javascript" src="script.js"></script>
         <script type="text/javascript" src="petengine.js"></script>
         <!-- Needed for Kik card functionality -->
         <script src="http://cdn.kik.com/kik/1.0.3/kik.js"></script>
+        <meta name="description" content="A Tamagotchi pet written in HTML5. Optimized for Kik Messenger.">
+        <link rel="kik-icon" href="images/smileyface.png">
+        <link rel="canonical" href="http://example.com/prod/">
     </head>
-    <body id="thebody">
+    <body id="thebody" onmousedown="setClick(true)" onmouseup="setClick(false)" ontouchstart="setClick(true)" ontouchend="setClick(false)" ontouchmove="scratchPet(event)">
         <!-- F_C stables -->
         <div class="app-page" data-page="stables">
             <div class="app-topbar">
@@ -101,41 +104,46 @@
                     <td style="position: absolute; right: 50px;" class="topbar-icon" style="padding-top: 0px;"><img id="stables-image-pet" class="topbar-image" src="images/stablesIconWhite.png"></img></td>
                 </tr></table>
             </div>
-            <br/>
-            <br/>
-            <br/>
-            <br/>
-            <br/>
-            <center id="pet-wrapper">
-                <div ><div id="pet-image" class="pet-image happy"></div></div>
-                <span id="petname"></span>
-            </center>
-            <div id="other-petpage-stuff">
-                <table id="pet-stats">
-                    <tr>
-                        <td>Health: </td>
-                        <td><div class="progressbar-back"><div class="progressbar-front" id="health-bar"></div></div></td>
-                    </tr>
-                    <tr>
-                        <td>Hunger: </td>
-                        <td><div class="progressbar-back"><div class="progressbar-front" id="hunger-bar"></div></div></td>
-                    </tr>
-                    <tr>
-                        <td>Happiness: </td>
-                        <td><div class="progressbar-back"><div class="progressbar-front" id="happiness-bar"></div></div></td>
-                    </tr>
-                    <tr>
-                        <td>Weight: </td>
-                        <td><div class="progressbar-back"><div class="progressbar-front" id="weight-bar"></div></div></td>
-                    </tr>
-                    <tr>
-                        <td>Age: </td>
-                        <td><div id="pet-age"></div></td>
-                    </tr>
-                </table>
+            <div id="main-pet-div">
+                <span id="error-message-pet" style="color: red; font-weight: bold;"></span>
                 <br/>
-                <div class="app-button" id="dance-button">Dance</div>
-                <div class="app-button" id="jump-button">Exercise</div>
+                <br/>
+                <center id="pet-wrapper">
+                    <div ><div id="pet-image" class="pet-image happy" ontouchmove="scratchPet(event)"></div></div>
+                    <span id="petname"></span>
+                </center>
+                <div id="other-petpage-stuff">
+                    <table id="pet-stats">
+                        <tr>
+                            <td>Health: </td>
+                            <td><div class="progressbar-back"><div class="progressbar-front" id="health-bar"></div></div></td>
+                        </tr>
+                        <tr>
+                            <td>Hunger: </td>
+                            <td><div class="progressbar-back"><div class="progressbar-front" id="hunger-bar"></div></div></td>
+                        </tr>
+                        <tr>
+                            <td>Happiness: </td>
+                            <td><div class="progressbar-back"><div class="progressbar-front" id="happiness-bar"></div></div></td>
+                        </tr>
+                        <tr>
+                            <td>Weight: </td>
+                            <td><div class="progressbar-back"><div class="progressbar-front" id="weight-bar"></div></div></td>
+                        </tr>
+                        <tr>
+                            <td>Age: </td>
+                            <td><div id="pet-age"></div></td>
+                        </tr>
+                    </table>
+                    <br/>
+                    <div class="normal-margin">
+                        <div class="app-button" id="dance-button">Dance</div>
+                        <div class="app-button" id="jump-button">Exercise</div>
+                    </div>
+                    <div class="app-section" id="food-section">
+                        <center>Feed your pet</center>
+                    </div>
+                </div>
             </div>
         </div>
         <!-- F_C exercise page -->
@@ -166,7 +174,136 @@
         <script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
         <!-- My code -->
         <script type="text/javascript">
+            clicked = false;
+            //Define food items
+            foodItems = new Object;
+            foodItemList = new Array();
+
+
+            foodItems.chocolateBar = new Object;
+            foodItems.chocolateBar.happiness = 5;
+            foodItems.chocolateBar.weight = 15;
+            foodItems.chocolateBar.hunger = 8;
+            foodItems.chocolateBar.image = "images/chocolateBar.png";
+            foodItems.chocolateBar.displayName = "Chocolate Bar";
+            foodItems.chocolateBar.name = "chocolateBar";
+            foodItemList[0] = foodItems.chocolateBar;
+
+            foodItems.steak = new Object;
+            foodItems.steak.happiness = 0;
+            foodItems.steak.weight = 4;
+            foodItems.steak.hunger = 15;
+            foodItems.steak.image = "images/steak.png";
+            foodItems.steak.displayName = "Steak";
+            foodItems.steak.name = "steak";
+            foodItemList[1] = foodItems.steak;
+
+            particleList = new Array();
+
             petDisplayNumber = 0;
+            function populateFoodImage(item, container) {
+                //<img class="food-image" src="images/chocolateBar.png"></img>
+                if(container == null) {
+                    container = EbyID("food-section");
+                }
+                html  = '<img class="food-image" src="';
+                html += item.image;
+                html += '" id="food-item-' + item.name;
+                html += '" onclick="selectFoodItem(\'' + item.name + '\')"></img>';
+                container.innerHTML += html;
+            }
+            foodTimeout = 0;
+            function Particle(color, size, gravity) {
+                this.size = size;
+                this.color = color;
+                this.gravity = gravity;
+                this.left = 0;
+                this.top = 0;
+                //Actually create the element
+                this.element = document.createElement("div");
+                this.createCss = function() {
+                    s =  "border-radius: 100%; position: absolute; width: " + this.size + "px; ";
+                    s += "background-color: " + this.color + "; ";
+                    s += "left: " + this.left + "px;";
+                    s += "top: " + this.top + "px;";
+                    //alert(s);
+                    return s;
+                }
+                this.update = function() {
+                    this.element.setAttribute("style", this.createCss());
+                    this.top += this.gravity;
+                };
+                EbyID("main-pet-div").appendChild(this.element);
+                particleList.push(this);
+            }
+            //Occurs when a food item is clicked on the page.
+            function selectFoodItem(name) {
+                if(EbyID("food-item-" + name).getAttribute("style") == "" || EbyID("food-item-" + name).getAttribute("style") == null) {
+                    if(foodTimeout <= 0) {
+                        EbyID("food-item-" + name).setAttribute("style", "background-color: black;");
+                    } else {
+                        EbyID("food-item-" + name).setAttribute("style", "background-color: red;");
+                        setPetError("Please wait " + foodTimeout + " seconds.");
+                        setTimeout(function() {
+                            EbyID("food-item-" + name).setAttribute("style", "");
+                        }, 100);
+                        return;
+                    }
+                    foodItem = null;
+                    for(i = 0; i < foodItemList.length; i++) {
+                        if(foodItemList[i].name == name) {
+                            foodItem = foodItemList[i];
+                        }
+                    }
+                    feedPet(foodItem);
+                    foodTimeout = 10;
+                    setTimeout(function() {
+                        EbyID("food-item-" + name).setAttribute("style", "");
+                    }, 100);
+                }
+            }
+            //F_C feedPet
+            function feedPet(item) {
+                //throw ((getItem("petWeight") / 1) + item.weight);
+                if((getItem("petWeight") / 1) + item.weight > 100) {
+                    localStorage.setItem("petWeight", 100);
+                    addItem("petHealth", -(Math.floor(item.weight / 2)));
+                } else {
+                    addItem("petWeight", item.weight);
+                    addItem("petHealth", -(Math.floor(item.weight / 2)));
+                }
+                if((getItem("petHunger") / 1) + item.hunger > 100) {
+                    localStorage.setItem("petHunger", 100);
+                } else {
+                    addItem("petHunger", item.hunger);
+                }
+                if((getItem("petHappiness") / 1) + item.happiness > 100) {
+                    localStorage.setItem("petHappiness", 100);
+                } else {
+                    addItem("petHappiness", item.happiness);
+                }
+                updateRendering();
+            }
+            errorWillBeCleared = false;
+            function setPetError(error) {
+                EbyID("error-message-pet").innerHTML = error;
+                errorWillBeCleared = true;
+                setTimeout(function() {
+                    //Clear it after some time
+                    if(errorWillBeCleared) {
+                        EbyID("error-message-pet").innerHTML = "";
+                        errorWillBeCleared = false;
+                    } else {
+                        return;
+                    }
+                }, 2000);
+            }
+            //Populate the food images
+            populateFoodImage(foodItems.chocolateBar);
+            populateFoodImage(foodItems.steak);
+
+
+
             //Gets the class corresponding to the happiness "happiness" and health "health". Note that health is used just for the dead face.
             function getHappiness(happiness, health) {
                 if(happiness == null) {
@@ -228,9 +365,7 @@
                 s += '</tr></table>';
                 display.innerHTML = s;
             }
-            function tick() {
-                //alert(document.getElementById("health-bar"));
-                //alert(App.getStack()[App.getStack().length - 1]);
+            function updateRendering() {
                 if(getPageName() == "Pet") {
                     updateProgressBar(document.getElementById("health-bar"), localStorage.getItem("petHealth"));
                     updateProgressBar(document.getElementById("hunger-bar"), localStorage.getItem("petHunger"));
@@ -242,10 +377,34 @@
                 if(getPageName() == "exercise-page") {
                     EbyID("pet-image-exercise").setAttribute("class", "pet-image " + getHappiness());
                 }
+            }
+            function tick() {
+                //alert(document.getElementById("health-bar"));
+                //alert(App.getStack()[App.getStack().length - 1]);
+                updateRendering();
+                if(foodTimeout > 0) {
+                    foodTimeout--;
+                }
                 changeThePet();
                 setTimeout(tick, 1000);
             }
             setTimeout(tick, 1000);
+            function renderingTick() {
+                setTimeout(renderingTick, 50);
+                for(i = 0; i < particleList.length; i++) {
+                    particleList[i].update();
+                }
+            };
+            setTimeout(renderingTick, 50);
+            function setClick(value) {
+                clicked = value;
+            }
+            function scratchPet(evt) {
+                if(Math.floor(Math.random() * 20) > 17) {
+                    touch = evt.changedTouches[0];
+                    p = new Particle("white", 5, 1);
+                }
+            }
             App.populator("creator", function(page) {
                 $(page)
                     .find("#createButton")
@@ -291,7 +450,6 @@
                 $(page)
                     .find("#back-image-stables")
                     .on("click", function() {
-                        alert("Hello");
                         App.back(function() {
                             //Do nothing
                         });
@@ -309,7 +467,6 @@
                 $(page)
                     .find("#stables-image-pet")
                     .on("click", function() {
-                        alert("hi");
                         loadPage("stables");
                     })
                 $(page)
@@ -327,7 +484,12 @@
                 $(page)
                     .find("#jump-button")
                     .on("click", function() {
-                        loadPage("exercise-page");
+                        if(foodTimeout <= 0) {
+                            foodTimeout = 15;
+                            loadPage("exercise-page");
+                        } else {
+                            setPetError("Please wait " + foodTimeout + " seconds.");
+                        }
                     });
             });
             App.populator("exercise-page", function(page) {
@@ -340,6 +502,8 @@
                     });
                 doJump();
                 setTimeout(function() {
+                    addItem("petWeight", -10);
+                    addItem("petHunger", -8);
                     App.back(function() {
                         //Do nothing
                     });

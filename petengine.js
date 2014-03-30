@@ -5,7 +5,7 @@ function changeThePet() {
     if(getItem("petHealth") > 0) {
         addItem("petAge", 1);
         age = getItem("petAge");
-        if(age % 50 == 0) {
+        if(age % 500 == 0) {
             /*weight = getItem("weight");
             if(Math.abs(weight - 50) >= 10) {
                 alert("weight");
@@ -19,7 +19,6 @@ function changeThePet() {
             }*/
             hunger = getItem("petHunger");
             if(hunger < 40) {
-                alert("hunger");
                 addItem("petHealth", -1);
             }
             if(hunger < 25) {
@@ -31,9 +30,11 @@ function changeThePet() {
             if(hunger < 8) {
                 addItem("petHealth", -1);
             }
+            if(hunger > 70) {
+                addItem("petHappiness", 2);
+            }
             happiness = getItem("petHappiness");
             if(happiness < 40) {
-                alert("happiness");
                 addItem("petHealth", -1);
             }
             if(happiness < 20) {
@@ -45,19 +46,28 @@ function changeThePet() {
             if(happiness < 5) {
                 addItem("petHealth", -1);
             }
+
+            if(happiness > 70) {
+                addItem("petHealth", 2);
+            }
+            if(getItem("petHealth") / 1 > 100) {
+                localStorage.setItem("petHealth", 100);
+            }
             health = getItem("petHealth");
             if(health < 40) {
-                alert("health");
                 addItem("petHealth", -1);
+                addItem("petHappiness", -2);
             }
             if(health < 15) {
                 addItem("petHealth", -1);
+                addItem("petHappiness", -2);
             }
             if(health < 8) {
                 addItem("petHealth", -1);
+                addItem("petHappiness", -2);
             }
         }
-        if(age % 3000 == 0) {
+        if(age % 1000 == 0) {
             addItem("petHappiness", -1);
             addItem("petHunger", -1);
         }
