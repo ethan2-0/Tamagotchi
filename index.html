@@ -52,8 +52,9 @@
                 <script type="text/javascript">
                     function create() {
                         name = EbyID("pet-name").value;
-                        if(name == "") {
+                        if(name == "" || name == null) {
                             error("Please enter a name.");
+                            return;
                         } else if(!(/^[a-z0-9]*$/i.test(name))) {
                             error("Only alphanumeric names. No spaces.");
                             return;
