@@ -210,6 +210,7 @@
                 container.innerHTML += html;
             }
             foodTimeout = 0;
+            //Note that particles only work in the area above the bars, etc. This is to fix issue #1. See the docs for this page for more info.
             function Particle(color, size, gravity, x, y) {
                 this.size = size;
                 this.color = color;
@@ -372,7 +373,9 @@
             function resizeCanvas() {
                 canvas = EbyID("pet-canvas");
                 canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
+                //To fix issue #1, this has been changed from the following line to how it is now:
+                //canvas.height = window.innerHeight;
+                canvas.height = 325;
             }
             function tick() {
                 //alert(document.getElementById("health-bar"));
