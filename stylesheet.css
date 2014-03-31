@@ -1,4 +1,5 @@
 div.pet-image {
+    /*DO NOT change the width or height here without updating at scratchPet() in index.html (the first if statement on commit 18).*/
     width: 100px;
     height: 100px;
 }
