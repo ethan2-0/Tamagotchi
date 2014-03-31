@@ -97,6 +97,8 @@
             </div>
         </div>
         <div class="app-page" data-page="Pet">
+            <canvas width="100" height="100" style="position: absolute; left: 0px; top: 0px;" id="pet-canvas">
+            </canvas>
             <div class="app-topbar">
                 <table><tr>
                     <td class="topbar-icon"><img id="back-image-pet" class="topbar-image" src="images/backArrow.png"></img></td>
@@ -213,26 +215,29 @@
                 container.innerHTML += html;
             }
             foodTimeout = 0;
-            function Particle(color, size, gravity) {
+            function Particle(color, size, gravity, x, y) {
                 this.size = size;
                 this.color = color;
                 this.gravity = gravity;
-                this.left = 0;
-                this.top = 0;
+                this.left = x;
+                this.top = y;
+                this.ticksLived = 0;
                 //Actually create the element
-                this.element = document.createElement("div");
-                this.createCss = function() {
-                    s =  "border-radius: 100%; position: absolute; width: " + this.size + "px; ";
-                    s += "background-color: " + this.color + "; ";
-                    s += "left: " + this.left + "px;";
-                    s += "top: " + this.top + "px;";
-                    return s;
-                }
-                this.update = function() {
-                    this.element.setAttribute("style", this.createCss());
-                    this.top += this.gravity;
+                this.draw = function() {
+                    canvas = EbyID("pet-canvas");
+                    context = canvas.getContext("2d");
+                    context.fillStyle = this.color;
+                    context.fillRect(this.left, this.top, this.size, size);
                 };
-                EbyID("main-pet-div").appendChild(this.element);
+                this.update = function() {
+                    this.top += this.gravity;
+                    this.draw();
+                    this.ticksLived++;
+                    if(this.ticksLived > 20) {
+                        index = particleList.indexOf(this);
+                        particleList.splice(index, 1);
+                    }
+                };
                 particleList.push(this);
             }
             //Occurs when a food item is clicked on the page.
@@ -377,6 +382,11 @@
                     EbyID("pet-image-exercise").setAttribute("class", "pet-image " + getHappiness());
                 }
             }
+            function resizeCanvas() {
+                canvas = EbyID("pet-canvas");
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
             function tick() {
                 //alert(document.getElementById("health-bar"));
                 //alert(App.getStack()[App.getStack().length - 1]);
@@ -390,6 +400,9 @@
             setTimeout(tick, 1000);
             function renderingTick() {
                 setTimeout(renderingTick, 50);
+                canvas = EbyID("pet-canvas");
+                context = canvas.getContext("2d");
+                context.clearRect("0", "0", "1920", "1080"); //1920X1080 is overkill, but it won't be in the future :)
                 for(i = 0; i < particleList.length; i++) {
                     particleList[i].update();
                 }
@@ -401,7 +414,7 @@
             function scratchPet(evt) {
                 if(Math.floor(Math.random() * 20) > 17) {
                     touch = evt.changedTouches[0];
-                    p = new Particle("white", 5, 1);
+                    p = new Particle("#464646", 5, 1, touch.clientX, touch.clientY);
                 }
             }
             App.populator("creator", function(page) {
@@ -462,6 +475,10 @@
                 $(page)
                     .on("appShow", function() {
                         EbyID("petname").innerHTML = localStorage.getItem("petname");
+                        window.addEventListener("resize", resizeCanvas, false);
+                        resizeCanvas();
+                        //Note: For circle on canvas,
+                        //context.arc(xpos, ypos, radius, 0, 2 * Math.PI)
                     })
                 $(page)
                     .find("#stables-image-pet")
