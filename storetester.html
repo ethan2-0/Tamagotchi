@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<!-- HTML5 offline support -->
+<html manifest="http://cards.kik.com/t/cache.manifest">
+    <head>
+        <title>Store Tester</title>
+        <script type='text/javascript' src='https://cdn.firebase.com/js/client/1.0.6/firebase.js'></script>
+        <script src="http://zeptojs.com/zepto.min.js"></script>
+        <script type='text/javascript' src='store.js'></script>
+    </head>
+
+    <body>
+        <div id="userDiv">
+            <dir>Username: <input type="text" id="myUsername"></input></div>
+            <br/>
+            <br/>
+            <dir>First name: <input type="text" id="myFirstName"></input></div>
+            <br/>
+            <dir>Last name: <input type="text" id="myLastName"></input></div>
+            <br/>
+            <div><input id="createUserButton" type="button">Create</input></div>
+            <br/>
+            <div><input id="getUserButton" type="button">Get</input></div>
+        </div>
+        <br/>
+        <div id="stableDiv">
+            <table>
+                <tr><th>Name</th></tr>
+            </table>
+        </div>
+        <br/>
+        <div id="petDiv">
+            <dir>Pet name: <input type="text" id="myPetName"></input></div>
+            <br/>
+            <dir>Active: <input type="text" id="myPetActive"></input></div>
+            <br/>
+            <div><input id="createPetButton" type="button">Create</input></div>
+            <br/>
+            <div><input id="modifyPetButton" type="button">Update</input></div>
+            <br/>
+            <div><input id="deletePetButton" type="button">Delete</input></div>
+        </div>
+        <br/>
+        <div id="friendsDiv">
+            <table>
+                <tr><th>Name</th></tr>
+            </table>
+        </div>
+        <br/>
+        <div id="friendDiv">
+            <dir>Username: <input type="text" id="friendUsername"></input></div>
+            <br/>
+            <dir>First name: <input type="text" id="friendFirstName"></input></div>
+            <br/>
+            <dir>Last name: <input type="text" id="friendLastName"></input></div>
+            <br/>
+            <dir>Active pet name: <input type="text" id="friendLastName"></input></div>
+            <br/>
+            <div><input id="deleteFriendButton" type="button">Delete</input></div>
+        </div>
+        <script type="text/javascript">
+        </script>
+    </body>
+</html>
