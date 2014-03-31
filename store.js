@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2014 Shannon White and Ethan White
  */
- 
+
 try {
     var T_FireBase = function(userName, log) {
         this.log = log
@@ -24,10 +24,10 @@ try {
         var hashed = MD5(userName)
 
         var store = new function() {
-            this.getUserRoot = new function() {
+            this.getUserRoot = function() {
                 return userRoot
             }
-            this.getPetRoot = new function() {
+            this.getPetRoot = function() {
                 return vpetRoot
             }
             this.log = log
@@ -37,6 +37,10 @@ try {
 
         this.getUser = function() {
             return userP
+        }
+
+        this.close = function() {
+            // TODO
         }
     }
 
@@ -173,7 +177,6 @@ try {
     /**
      * listener.onPetAdded(this, pet)
      * listener.onPetRemoved(this, petId)
-     * listener.onPetUpdated(this, petId)
      */
     var T_StableP = function(store, userId, isMyStable) {
         var ref = store.getUserRoot().child(userId).child("stable")
@@ -213,7 +216,7 @@ try {
             var id = guid()
             petInfo.id = id
             var newPetRef = ref.push(id)
-            vpetRoot.child(id).set(petInfo)
+            store.getPetRoot().child(id).set(petInfo)
             return id
         }
 
@@ -229,50 +232,80 @@ try {
     var T_VPetP = function(store, petId, isMyPet) {
         var ref = store.getPetRoot().child(petId)
         var thiz = this
-        var listener = null
+        var listeners = []
 
         var onValue = function(snapshot) {
-            if (listener == null) {
+            if (listeners.length == 0) {
                 return
             }
             if (snapshot.val() == null) {
-                listener.onDeleted(thiz)
+                for (index in listeners) {
+                    listeners[index].onDeleted(thiz)
+                }
             }
         }
 
         var onChildAdded = function(snapshot) {
-            if (listener == null) {
+            if (listeners.length == 0) {
                 return
             }
-            listener.onProperty(thiz, snapshot.name(), snapshot.val(), true)
+            for (var index in listeners) {
+                listeners[index].onProperty(thiz, snapshot.name(), snapshot.val(), true)
+            }
         }
 
         var onChildRemoved = function(snapshot) {
-            if (listener == null) {
+            if (listeners.length == 0) {
                 return
             }
-            listener.onProperty(thiz, snapshot.name(), null, false)
+            for (var index in listeners) {
+                listeners[index].onProperty(thiz, snapshot.name(), null, false)
+            }
         }
 
         var onChildUpdated = function(snapshot) {
-            if (listener == null) {
+            if (listeners.length == 0) {
                 return
             }
-            listener.onProperty(thiz, snapshot.name(), snapshot.val(), false)
+            for (var index in listeners) {
+                listeners[index].onProperty(thiz, snapshot.name(), snapshot.val(), false)
+            }
         }
 
-        this.setListener = function(l) {
-            listener = l
-            if (listener == null) {
+        this.addListener = function(l) {
+            for (var index in listeners) {
+                if (listeners[index] == l) {
+                    throw "Attempt to add listener twice"
+                }
+            }
+            if (listeners.length > 0) {
                 ref.off("value", onValue)
                 ref.off("child_added", onChildAdded)
                 ref.off("child_removed", onChildRemoved)
                 ref.off("child_changed", onChildUpdated)
-            } else {
-                ref.on("value", onValue)
-                ref.on("child_added", onChildAdded)
-                ref.on("child_removed", onChildRemoved)
-                ref.on("child_changed", onChildUpdated)
+            }
+            listeners.push(l)
+            ref.on("value", onValue)
+            ref.on("child_added", onChildAdded)
+            ref.on("child_removed", onChildRemoved)
+            ref.on("child_changed", onChildUpdated)
+        }
+
+        this.removeListener = function(l) {
+            if (listeners.length == 0) {
+                return
+            }
+            for (var index in listeners) {
+                if (listeners[index] == l) {
+                    listeners.splice(index, 1)
+                    break
+                }
+            }
+            if (listeners.length == 0) {
+                ref.off("value", onValue)
+                ref.off("child_added", onChildAdded)
+                ref.off("child_removed", onChildRemoved)
+                ref.off("child_changed", onChildUpdated)
             }
         }
 
@@ -282,6 +315,10 @@ try {
 
         this.remove = function() {
             ref.remove()
+        }
+
+        this.getId = function() {
+            return petId
         }
 
         this.isMyPet = function() {

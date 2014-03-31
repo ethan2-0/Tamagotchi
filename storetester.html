@@ -6,58 +6,243 @@
         <script type='text/javascript' src='https://cdn.firebase.com/js/client/1.0.6/firebase.js'></script>
         <script src="http://zeptojs.com/zepto.min.js"></script>
         <script type='text/javascript' src='store.js'></script>
+        <script src='http://www.webtoolkit.info/djs/webtoolkit.md5.js'></script>
     </head>
 
     <body>
         <div id="userDiv">
-            <dir>Username: <input type="text" id="myUsername"></input></div>
+            <h2>User</h2>
+            <div>Username: <input type="text" id="myUsername"></input></div>
             <br/>
+            <div>First name: <input type="text" id="myFirstName"></input></div>
             <br/>
-            <dir>First name: <input type="text" id="myFirstName"></input></div>
+            <div>Last name: <input type="text" id="myLastName"></input></div>
             <br/>
-            <dir>Last name: <input type="text" id="myLastName"></input></div>
+            <div><button id="createUserButton" type="button">Create</button></div>
             <br/>
-            <div><input id="createUserButton" type="button">Create</input></div>
-            <br/>
-            <div><input id="getUserButton" type="button">Get</input></div>
+            <div><button id="getUserButton" type="button">Get</button></div>
         </div>
         <br/>
         <div id="stableDiv">
+            <h2>User's Stable</h2>
             <table>
-                <tr><th>Name</th></tr>
+                <thead><tr><th>Name</th></tr></thead>
+                <tbody id="stableTable"></tbody>
             </table>
         </div>
         <br/>
         <div id="petDiv">
-            <dir>Pet name: <input type="text" id="myPetName"></input></div>
+            <h2>User Pet</h2>
+            <div>Pet name: <input type="text" id="myPetName"></input></div>
             <br/>
-            <dir>Active: <input type="text" id="myPetActive"></input></div>
+            <div>Active: <input type="text" id="myPetActive"></input></div>
             <br/>
-            <div><input id="createPetButton" type="button">Create</input></div>
+            <div><button id="createPetButton" type="button">Create</button></div>
             <br/>
-            <div><input id="modifyPetButton" type="button">Update</input></div>
+            <div><button id="modifyPetButton" type="button">Update</button></div>
             <br/>
-            <div><input id="deletePetButton" type="button">Delete</input></div>
+            <div><button id="deletePetButton" type="button">Delete</button></div>
         </div>
         <br/>
         <div id="friendsDiv">
+            <h2>User's Friends</h2>
             <table>
                 <tr><th>Name</th></tr>
             </table>
         </div>
         <br/>
         <div id="friendDiv">
-            <dir>Username: <input type="text" id="friendUsername"></input></div>
+            <h2>User Friend</h2>
+            <div>Username: <input type="text" id="friendUsername"></input></div>
             <br/>
-            <dir>First name: <input type="text" id="friendFirstName"></input></div>
+            <div>First name: <input type="text" id="friendFirstName"></input></div>
             <br/>
-            <dir>Last name: <input type="text" id="friendLastName"></input></div>
+            <div>Last name: <input type="text" id="friendLastName"></input></div>
             <br/>
-            <dir>Active pet name: <input type="text" id="friendLastName"></input></div>
+            <div>Active pet name: <input type="text" id="friendLastName"></input></div>
             <br/>
-            <div><input id="deleteFriendButton" type="button">Delete</input></div>
+            <div><button id="deleteFriendButton" type="button">Delete</button></div>
         </div>
         <script type="text/javascript">
+        var store = null
+        var user = null
+        var stable = null
+        var pets = []
+        var currentPet = null
+
+        var setUserData = new function() {
+            this.onProperty = function(src, pname, value, isNew) {
+                try {
+                    if (pname == "username") {
+                        $("#myUsername").val(value)
+                    } else if (pname == "firstName") {
+                        $("#myFirstName").val(value)
+                    } else if (pname == "lastName") {
+                        $("#myLastName").val(value)
+                    } else {
+                        throw "Unexpected property " + pname
+                    }
+                } catch (e) {
+                    window.alert("createUserButton " + e)
+                }
+            }
+        }()
+
+        var setPetRowData = new function() {
+            this.onProperty = function(src, pname, value, isNew) {
+                try {
+                    if (pname == "name") {
+                        var petId = src.getId()
+                        $("#stable_div_" + petId).text(value)
+                    } else if (pname == "id") {
+                        var petId = src.getId()
+                        if (value != null && petId != value) {
+                            throw "setPetRowData Id mismatch.  Expected " + petId + " but got " + value
+                        }
+                    } else {
+                        throw "Unexpected property " + pname
+                    }
+                } catch (e) {
+                    window.alert("onProperty " + e)
+                }
+            }
+            this.onDeleted = function(src) {
+                var petId = src.getId()
+                src.removeListener(setPetRowData)
+                $("#stable_div_" + petId).remove()
+            }
+        }()
+
+        var setPetData = new function() {
+            this.onProperty = function(src, pname, value, isNew) {
+                try {
+                    if (pname == "name") {
+                        $("#myPetName").val(value)
+                    } else if (pname == "id") {
+                        var petId = src.getId()
+                        if (value != null && petId != value) {
+                            throw "setPetData Id mismatch.  Expected " + petId + " but got " + value
+                        }
+                    } else {
+                        throw "Unexpected property " + pname
+                    }
+                } catch (e) {
+                    window.alert("onProperty " + e)
+                }
+            }
+            this.onDeleted = function(src) {
+                src.removeListener(setPetData)
+                $("#myPetName").val("")
+            }
+        }()
+
+        var setStable = new function() {
+            this.onPetAdded = function(src, pet) {
+                try {
+                    var petId = pet.getId()
+                    tr = $("<tr></tr>")
+                        .attr({id: "stable_tr_" + petId})
+                        .click(function() {
+                            if (currentPet != null) {
+                                currentPet.removeListener(setPetData)
+                                currentPet = null
+                            }
+                            pet.addListener(setPetData)
+                            currentPet = pet
+                        })
+                        .append($("<div></div>")
+                            .attr({id: "stable_div_" + petId})
+                        )
+                    $("#stableTable").append(tr)
+                    pet.addListener(setPetRowData)
+                    pets[petId] = pet
+                    if (currentPet == null) {
+                        pet.addListener(setPetData)
+                        currentPet = pet
+                    }
+                } catch (e) {
+                    window.alert("onPetAdded " + e)
+                }
+            }
+            this.onPetRemoved = function(src, petId) {
+                try {
+                    pets[petId] = null
+                } catch (e) {
+                    window.alert("onPetRemoved " + e)
+                }
+            }
+            this.clear = function() {
+                $("#stableTable tr").remove()
+            }
+        }()
+
+        var switchUser = function(username) {
+            if (user != null) {
+                user.setListener(null)
+            }
+            if (store != null) {
+                store.close()
+            }
+            store = new T_FireBase(username, null)
+            user = store.getUser()
+            user.setListener(setUserData)
+            if (stable != null) {
+                stable.setListener(null)
+            }
+            if (currentPet != null) {
+                currentPet.removeListener(setPetData)
+                currentPet = null
+            }
+            for (var index in pets) {
+                pet = pets[index]
+                if (pet != null) {
+                    pet.removeListener(setPetRowData)
+                }
+            }
+            pets = []
+            setStable.clear()
+            stable = user.getStable()
+            stable.setListener(setStable)
+        }
+
+        $("#createUserButton").click(function() {
+            try {
+                var username = $("#myUsername").val()
+                switchUser(username)
+                user.setProperty("username", username)
+                user.setProperty("firstName", $("#myFirstName").val())
+                user.setProperty("lastName", $("#myLastName").val())
+            } catch (e) {
+                window.alert("createUserButton " + e)
+            }
+        })
+        $("#getUserButton").click(function() {
+            try {
+                var username = $("#myUsername").val()
+                switchUser(username)
+            } catch (e) {
+                window.alert("getUserButton " + e)
+            }
+        })
+        $("#createPetButton").click(function() {
+            try {
+                var name = $("#myPetName").val()
+                stable.add({
+                    name: name
+                })
+            } catch (e) {
+                window.alert("createUserButton " + e)
+            }
+        })
+        $("#modifyPetButton").click(function() {
+        })
+        $("#deletePetButton").click(function() {
+            if (currentPet != null) {
+                currentPet.remove()
+            }
+        })
+        $("#deleteFriendButton").click(function() {
+        })
         </script>
     </body>
 </html>
