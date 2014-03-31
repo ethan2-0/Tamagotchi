@@ -66,6 +66,9 @@ function changeThePet() {
                 addItem("petHealth", -1);
                 addItem("petHappiness", -2);
             }
+            if(getItem("petHappiness") > 100) {
+                localStorage.setItem("petHappiness", 100);
+            }
         }
         if(age % 1000 == 0) {
             addItem("petHappiness", -1);
