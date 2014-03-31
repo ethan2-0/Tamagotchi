@@ -203,7 +203,6 @@
 
             petDisplayNumber = 0;
             function populateFoodImage(item, container) {
-                //<img class="food-image" src="images/chocolateBar.png"></img>
                 if(container == null) {
                     container = EbyID("food-section");
                 }
@@ -227,7 +226,6 @@
                     s += "background-color: " + this.color + "; ";
                     s += "left: " + this.left + "px;";
                     s += "top: " + this.top + "px;";
-                    //alert(s);
                     return s;
                 }
                 this.update = function() {
