@@ -369,19 +369,11 @@
                 s += '</tr></table>';
                 display.innerHTML = s;
             }
+            //Happens slowly
             function updateRendering() {
-                if(getPageName() == "Pet") {
-                    updateProgressBar(document.getElementById("health-bar"), localStorage.getItem("petHealth"));
-                    updateProgressBar(document.getElementById("hunger-bar"), localStorage.getItem("petHunger"));
-                    updateProgressBar(document.getElementById("happiness-bar"), localStorage.getItem("petHappiness"));
-                    updateProgressBar(document.getElementById("weight-bar"), localStorage.getItem("petWeight"), "black");
-                    EbyID("pet-age").innerHTML = localStorage.getItem("petAge");//Math.floor((new Date().getTime() - localStorage.getItem("petBirthday").getTime()) / 60) + " minutes";
-                    EbyID("pet-image").setAttribute("class", "pet-image " + getHappiness());
-                }
-                if(getPageName() == "exercise-page") {
-                    EbyID("pet-image-exercise").setAttribute("class", "pet-image " + getHappiness());
-                }
+                setTimeout(updateRendering, 100);
             }
+            setTimeout(renderingTick, 50);
             function resizeCanvas() {
                 canvas = EbyID("pet-canvas");
                 canvas.width = window.innerWidth;
@@ -390,7 +382,6 @@
             function tick() {
                 //alert(document.getElementById("health-bar"));
                 //alert(App.getStack()[App.getStack().length - 1]);
-                updateRendering();
                 if(foodTimeout > 0) {
                     foodTimeout--;
                 }
@@ -400,21 +391,44 @@
             setTimeout(tick, 1000);
             function renderingTick() {
                 setTimeout(renderingTick, 50);
+                //Particles
                 canvas = EbyID("pet-canvas");
                 context = canvas.getContext("2d");
                 context.clearRect("0", "0", "1920", "1080"); //1920X1080 is overkill, but it won't be in the future :)
                 for(i = 0; i < particleList.length; i++) {
                     particleList[i].update();
                 }
+                //Updating the pet page
+                if(getPageName() == "Pet") {
+                    updateProgressBar(document.getElementById("health-bar"), localStorage.getItem("petHealth"));
+                    updateProgressBar(document.getElementById("hunger-bar"), localStorage.getItem("petHunger"));
+                    updateProgressBar(document.getElementById("happiness-bar"), localStorage.getItem("petHappiness"));
+                    updateProgressBar(document.getElementById("weight-bar"), localStorage.getItem("petWeight"), "black");
+                    EbyID("pet-age").innerHTML = localStorage.getItem("petAge");//Math.floor((new Date().getTime() - localStorage.getItem("petBirthday").getTime()) / 60) + " minutes";
+                    EbyID("pet-image").setAttribute("class", "pet-image " + getHappiness());
+                }
+                //Updating the exercise page
+                if(getPageName() == "exercise-page") {
+                    EbyID("pet-image-exercise").setAttribute("class", "pet-image " + getHappiness());
+                }
             };
             setTimeout(renderingTick, 50);
             function setClick(value) {
                 clicked = value;
             }
+            petScratches = 0;
             function scratchPet(evt) {
-                if(Math.floor(Math.random() * 20) > 17) {
+                petScratches++;
+                if(petScratches % 6 == 0) {
                     touch = evt.changedTouches[0];
-                    p = new Particle("#464646", 5, 1, touch.clientX, touch.clientY);
+                    boundingRect = EbyID("pet-image").getBoundingClientRect();
+                    if((touch.clientX - boundingRect.left < 100 && touch.clientX - boundingRect.left > 0) &&
+                        (touch.clientY - boundingRect.top < 100 && touch.clientY - boundingRect.top > 0)) {
+                        p = new Particle("#464646", 5, 1, touch.clientX, touch.clientY);
+                        if(petScratches % 16 == 0 && getItem("petHappiness") / 1 < 100) {
+                            addItem("petHappiness", 1);
+                        }
+                    }
                 }
             }
             App.populator("creator", function(page) {
