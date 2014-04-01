@@ -86,8 +86,6 @@
                         $("#myFirstName").val(value)
                     } else if (pname == "lastName") {
                         $("#myLastName").val(value)
-                    } else {
-                        throw "Unexpected property " + pname
                     }
                 } catch (e) {
                     window.alert("setUserData.onProperty " + e)
@@ -106,8 +104,6 @@
                         if (value != null && petId != value) {
                             throw "setPetRowData Id mismatch.  Expected " + petId + " but got " + value
                         }
-                    } else {
-                        throw "Unexpected property " + pname
                     }
                 } catch (e) {
                     window.alert("onProperty " + e)
@@ -130,8 +126,6 @@
                         if (value != null && petId != value) {
                             throw "setPetData Id mismatch.  Expected " + petId + " but got " + value
                         }
-                    } else {
-                        throw "Unexpected property " + pname
                     }
                 } catch (e) {
                     window.alert("onProperty " + e)
@@ -206,8 +200,6 @@
                         $("#friendFirstName").val(value)
                     } else if (pname == "lastName") {
                         $("#friendLastName").val(value)
-                    } else {
-                        throw "Unexpected property " + pname
                     }
                 } catch (e) {
                     window.alert("setFriendData " + e)
@@ -294,7 +286,7 @@
 
             // Stable
             if (stable != null) {
-                stable.setListener(null)
+                stable.removeListener(setStable)
             }
             if (currentPet != null) {
                 currentPet.removeListener(setPetData)
@@ -309,11 +301,11 @@
             pets = []
             setStable.clear()
             stable = user.getStable()
-            stable.setListener(setStable)
+            stable.addListener(setStable)
 
             // Friend List
             if (friendList != null) {
-                friendList.setListener(null)
+                friendList.removeListener(setFriendList)
             }
             if (currentFriend != null) {
                 currentFriend.removeListener(setFriendData)
@@ -328,7 +320,7 @@
             friends = []
             setFriendList.clear()
             friendList = user.getFriends()
-            friendList.setListener(setFriendList)
+            friendList.addListener(setFriendList)
         }
 
         $("#createUserButton").click(function() {

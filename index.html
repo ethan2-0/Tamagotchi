@@ -378,6 +378,10 @@
                                 if (pname == "fullName") {
                                     $(page).find("#friends_div_name_" + userId).text(value)
                                 }
+                                // Hack
+                                //if (pname == "firstName") {
+                                //    $(page).find("#friends_div_name_" + userId).text(value)
+                                //}
                             } catch (e) {
                                 window.alert("friendListener " + e)
                             }
@@ -390,7 +394,7 @@
                     }()
 
                     this.onFriendAdded = function(src, friend) {
-                        var userId = src.getId()
+                        var userId = friend.getId()
                         if (friendsList[userId] != null) {
                             return
                         }
@@ -415,7 +419,7 @@
                 }()
                 currentUser.getFriends().addListener(friendsListener)
                 $(page).on('appDestroy', function () {
-                    currentUser.getFriends().removeListener(stableListener)
+                    currentUser.getFriends().removeListener(friendsListener)
                 });
                 $(page)
                     .find("#stable-image")
