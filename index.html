@@ -420,8 +420,8 @@
                 if(petScratches % 6 == 0) {
                     touch = evt.changedTouches[0];
                     boundingRect = EbyID("pet-image").getBoundingClientRect();
-                    if((touch.clientX - boundingRect.left < 100 && touch.clientX - boundingRect.left > 0) &&
-                        (touch.clientY - boundingRect.top < 100 && touch.clientY - boundingRect.top > 0)) {
+                    if((touch.clientX - boundingRect.left < 128 && touch.clientX - boundingRect.left > 0) &&
+                        (touch.clientY - boundingRect.top < 128 && touch.clientY - boundingRect.top > 0)) {
                         p = new Particle("#464646", 5, 1, touch.clientX, touch.clientY);
                         if(petScratches % 16 == 0 && getItem("petHappiness") / 1 < 100) {
                             addItem("petHappiness", 1);

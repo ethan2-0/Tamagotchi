@@ -1,7 +1,7 @@
 div.pet-image {
     /*DO NOT change the width or height here without updating at scratchPet() in index.html (the first if statement on commit 18).*/
-    width: 100px;
-    height: 100px;
+    width: 128px;
+    height: 128px;
 }
 #pet-stats {
     /*position: absolute;*/
