@@ -26,7 +26,7 @@
         <div id="stableDiv">
             <h2>User's Stable</h2>
             <table>
-                <thead><tr><th>Name</th></tr></thead>
+                <thead><tr><th>First Name</th><th>Last Name</th></tr></thead>
                 <tbody id="stableTable"></tbody>
             </table>
         </div>
@@ -47,7 +47,8 @@
         <div id="friendsDiv">
             <h2>User's Friends</h2>
             <table>
-                <tr><th>Name</th></tr>
+                <thead><tr><th>Name</th></tr></thead>
+                <tbody id="friendsTable"></tbody>
             </table>
         </div>
         <br/>
@@ -62,13 +63,19 @@
             <div>Active pet name: <input type="text" id="friendLastName"></input></div>
             <br/>
             <div><button id="deleteFriendButton" type="button">Delete</button></div>
+            <div><button id="addFriendButton" type="button">Add</button></div>
         </div>
         <script type="text/javascript">
         var store = null
         var user = null
+
         var stable = null
         var pets = []
         var currentPet = null
+
+        var friendList = null
+        var friends = []
+        var currentFriend = null
 
         var setUserData = new function() {
             this.onProperty = function(src, pname, value, isNew) {
@@ -83,7 +90,7 @@
                         throw "Unexpected property " + pname
                     }
                 } catch (e) {
-                    window.alert("createUserButton " + e)
+                    window.alert("setUserData.onProperty " + e)
                 }
             }
         }()
@@ -143,12 +150,7 @@
                     tr = $("<tr></tr>")
                         .attr({id: "stable_tr_" + petId})
                         .click(function() {
-                            if (currentPet != null) {
-                                currentPet.removeListener(setPetData)
-                                currentPet = null
-                            }
-                            pet.addListener(setPetData)
-                            currentPet = pet
+                            switchPet(pet)
                         })
                         .append($("<div></div>")
                             .attr({id: "stable_div_" + petId})
@@ -157,8 +159,7 @@
                     pet.addListener(setPetRowData)
                     pets[petId] = pet
                     if (currentPet == null) {
-                        pet.addListener(setPetData)
-                        currentPet = pet
+                        switchPet(pet)
                     }
                 } catch (e) {
                     window.alert("onPetAdded " + e)
@@ -176,16 +177,122 @@
             }
         }()
 
+        var setFriendRowData = new function() {
+            this.onProperty = function(src, pname, value, isNew) {
+                try {
+                    var userId = src.getId()
+                    if (pname == "firstName") {
+                        $("#friends_td_firstName_" + userId).text(value)
+                    } else if (pname == "lastName") {
+                        $("#friends_td_lastName_" + userId).text(value)
+                    }
+                } catch (e) {
+                    window.alert("setFriendRowData.onProperty " + e)
+                }
+            }
+            this.onDeleted = function(src) {
+                var userId = src.getId()
+                src.removeListener(setFriendRowData)
+                $("#friends_tr_" + userId).remove()
+            }
+        }()
+
+        var setFriendData = new function() {
+            this.onProperty = function(src, pname, value, isNew) {
+                try {
+                    if (pname == "username") {
+                        $("#friendUsername").val(value)
+                    } else if (pname == "firstName") {
+                        $("#friendFirstName").val(value)
+                    } else if (pname == "lastName") {
+                        $("#friendLastName").val(value)
+                    } else {
+                        throw "Unexpected property " + pname
+                    }
+                } catch (e) {
+                    window.alert("setFriendData " + e)
+                }
+            }
+            this.onDeleted = function(src) {
+                src.removeListener(setFriendData)
+                $("#friendUsername").val("")
+                $("#friendFirstName").val("")
+                $("#friendLastName").val("")
+            }
+        }()
+
+        var setFriendList = new function() {
+            this.onFriendAdded = function(src, friend) {
+                try {
+                    var userId = friend.getId()
+                    tr = $("<tr></tr>")
+                        .attr({id: "friends_tr_" + userId})
+                        .click(function() {
+                            switchFriend(friend)
+                        })
+                        .append($("<td></td>")
+                            .attr({id: "friends_td_firstName_" + userId})
+                        )
+                        .append($("<td></td>")
+                            .attr({id: "friends_td_lastName_" + userId})
+                        )
+                    $("#friendsTable").append(tr)
+                    friend.addListener(setFriendRowData)
+                    friends[userId] = friend
+                    if (currentFriend == null) {
+                        switchFriend(friend)
+                    }
+                } catch (e) {
+                    window.alert("onFriendAdded " + e)
+                }
+            }
+            this.onFriendRemoved = function(src, userId) {
+                try {
+                    if (currentFriend == friends[userId]) {
+                        setFriendData.onDeleted(currentFriend)
+                        currentFriend = null
+                    }
+                    setFriendRowData.onDeleted(friends[userId])
+                    friends[userId] = null
+                } catch (e) {
+                    window.alert("onFriendRemoved " + e)
+                }
+            }
+            this.clear = function() {
+                $("#friendsTable tr").remove()
+            }
+        }()
+
+        var switchFriend = function(friend) {
+            if (currentFriend != null) {
+                currentFriend.removeListener(setFriendData)
+                currentFriend = null
+            }
+            friend.addListener(setFriendData)
+            currentFriend = friend
+        }
+
+        var switchPet = function(pet) {
+            if (currentPet != null) {
+                currentPet.removeListener(setPetData)
+                currentPet = null
+            }
+            pet.addListener(setPetData)
+            currentPet = pet
+        }
+
         var switchUser = function(username) {
             if (user != null) {
-                user.setListener(null)
+                user.removeListener(setUserData)
             }
             if (store != null) {
                 store.close()
             }
             store = new T_FireBase(username, null)
             user = store.getUser()
-            user.setListener(setUserData)
+            user.addListener(setUserData)
+
+            // Stable
             if (stable != null) {
                 stable.setListener(null)
             }
@@ -203,6 +310,25 @@
             setStable.clear()
             stable = user.getStable()
             stable.setListener(setStable)
+
+            // Friend List
+            if (friendList != null) {
+                friendList.setListener(null)
+            }
+            if (currentFriend != null) {
+                currentFriend.removeListener(setFriendData)
+                currentFriend = null
+            }
+            for (var index in friends) {
+                friend = friends[index]
+                if (friend != null) {
+                    friend.removeListener(setFriendRowData)
+                }
+            }
+            friends = []
+            setFriendList.clear()
+            friendList = user.getFriends()
+            friendList.setListener(setFriendList)
         }
 
         $("#createUserButton").click(function() {
@@ -231,17 +357,33 @@
                     name: name
                 })
             } catch (e) {
-                window.alert("createUserButton " + e)
+                window.alert("createPetButton " + e)
             }
         })
         $("#modifyPetButton").click(function() {
         })
+
         $("#deletePetButton").click(function() {
             if (currentPet != null) {
                 currentPet.remove()
             }
         })
         $("#deleteFriendButton").click(function() {
+            try {
+                var username = $("#friendUsername").val()
+                friendList.remove(username)
+            } catch (e) {
+                window.alert("addFriendButton " + e)
+            }
+        })
+
+        $("#addFriendButton").click(function() {
+            try {
+                var username = $("#friendUsername").val()
+                friendList.add(username)
+            } catch (e) {
+                window.alert("addFriendButton " + e)
+            }
         })
         </script>
     </body>

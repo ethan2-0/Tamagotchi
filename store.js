@@ -50,65 +50,95 @@ try {
      */
     var T_UserP = function(store, userId, isMe) {
         var thiz = this
-        var listener = null
+        var listeners = []
         var ref = store.getUserRoot().child(userId)
         var stable = new T_StableP(store, userId, isMe)
         var friends = isMe ? new T_FriendListP(store, userId) : null
 
         var onValue = function(snapshot) {
-            if (listener == null) {
+            if (listeners.length == 0) {
                 return
             }
             if (snapshot.val() == null) {
-                listener.onDeleted(thiz)
+	            for (var index in listeners) {
+	                listeners[index].onDeleted(thiz)
+	            }
             }
         }
 
         var onChildAdded = function(snapshot) {
-            if (listener == null) {
+            if (listeners.length == 0) {
                 return
             }
             var pname = snapshot.name()
-            if (pname == "stable" || pname == "friemds") {
+            if (pname == "stable" || pname == "friends") {
                 return
             }
-            listener.onProperty(thiz, pname, snapshot.val(), true)
+	        for (var index in listeners) {
+            	listeners[index].onProperty(thiz, pname, snapshot.val(), true)
+            }
         }
 
         var onChildRemoved = function(snapshot) {
-            if (listener == null) {
+            if (listeners.length == 0) {
                 return
             }
             var pname = snapshot.name()
-            if (pname == "stable" || pname == "friemds") {
+            if (pname == "stable" || pname == "friends") {
                 return
             }
-            listener.onProperty(thiz, pname, null, false)
+	        for (var index in listeners) {
+            	listeners[index].onProperty(thiz, pname, null, false)
+        	}
         }
 
         var onChildUpdated = function(snapshot) {
-            if (listener == null) {
+            if (listeners.length == 0) {
                 return
             }
             var pname = snapshot.name()
-            if (pname == "stable" || pname == "friemds") {
+            if (pname == "stable" || pname == "friends") {
                 return
             }
-            listener.onProperty(thiz, pname, snapshot.val(), false)
+            for (var index in listeners) {
+                listeners[index].onProperty(thiz, pname, snapshot.val(), false)
+            }
         }
 
-        this.setListener = function(l) {
-            listener = l
-            if (listener == null) {
+        this.addListener = function(l) {
+            for (var index in listeners) {
+                if (listeners[index] == l) {
+                    throw "Attempt to add listener twice"
+                }
+            }
+            if (listeners.length > 0) {
                 ref.off("value", onValue)
                 ref.off("child_added", onChildAdded)
                 ref.off("child_removed", onChildRemoved)
                 ref.off("child_changed", onChildUpdated)
-            } else {
-                ref.on("value", onValue)
-                ref.on("child_added", onChildAdded)
-                ref.on("child_removed", onChildRemoved)
-                ref.on("child_changed", onChildUpdated)
+            }
+            listeners.push(l)
+            ref.on("value", onValue)
+            ref.on("child_added", onChildAdded)
+            ref.on("child_removed", onChildRemoved)
+            ref.on("child_changed", onChildUpdated)
+        }
+
+        this.removeListener = function(l) {
+            if (listeners.length == 0) {
+                return
+            }
+            for (var index in listeners) {
+                if (listeners[index] == l) {
+                    listeners.splice(index, 1)
+                    break
+                }
+            }
+            if (listeners.length == 0) {
+                ref.off("value", onValue)
+                ref.off("child_added", onChildAdded)
+                ref.off("child_removed", onChildRemoved)
+                ref.off("child_changed", onChildUpdated)
             }
         }
 
@@ -117,22 +147,35 @@ try {
         }
 
         this.getFriends = function() {
-            return friends
+        	if (isMe) {
+            	return friends
+        	}
         }
 
         this.setProperty = function(pname, value) {
-            ref.child(pname).set(value)
+        	if (isMe) {
+            	ref.child(pname).set(value)
+        	}
         }
 
         this.remove = function() {
-            ref.remove()
+        	if (isMe) {
+            	ref.remove()
+        	}
         }
 
         this.isMe = function() {
             return isMe
         }
+
+        this.getId = function() {
+        	return userId
+        }
     }
 
+    /**
+     * username --> hash(username)
+     */
     var T_FriendListP = function(store, userId) {
         var ref = store.getUserRoot().child(userId).child("friends")
         var thiz = this
@@ -142,8 +185,8 @@ try {
             if (listener == null) {
                 return
             }
-            var pet = new T_UserP(store, snapshot.val(), false)
-            listener.onFriendAdded(thiz, pet)
+            var friend = new T_UserP(store, snapshot.val(), false)
+            listener.onFriendAdded(thiz, friend)
         }
 
         var onFriendRemoved = function(snapshot) {
@@ -164,13 +207,13 @@ try {
             }
         }
 
-        /**
-         * Returns the generated pet id
-         */
         this.add = function(username) {
-            var id = guid()
-            ref.push(id)
-            return id
+            var hashed = MD5(username)
+            ref.child(username).set(hashed)
+        }
+
+        this.remove = function(username) {
+            ref.child(username).remove()
         }
     }
 
