@@ -265,6 +265,7 @@
                         $(page).find("#stable_li_" + petId).remove()
                     }
                 }())
+                /*
                 $(page)
                 .on("appShow", function() {
                     populatePetDisplay(EbyID("pet-display-1"), localStorage.getItem("petname"));
@@ -291,6 +292,7 @@
                     .on("appShow", function() {
                         EbyID("add-pet").setAttribute("style", "text-shadow: 0px 0px 10px white;");
                     });
+                */
             });
             App.populator("Pet", function(page) {
                 $(page)
