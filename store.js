@@ -61,6 +61,9 @@ try {
             }
             if (snapshot.val() == null) {
 	            for (var index in listeners) {
+                    if (listeners[index] == null) {
+                        continue
+                    }
 	                listeners[index].onDeleted(thiz)
 	            }
             }
@@ -75,6 +78,9 @@ try {
                 return
             }
 	        for (var index in listeners) {
+                if (listeners[index] == null) {
+                    continue
+                }
             	listeners[index].onProperty(thiz, pname, snapshot.val(), true)
             }
         }
@@ -88,6 +94,9 @@ try {
                 return
             }
 	        for (var index in listeners) {
+                if (listeners[index] == null) {
+                    continue
+                }
             	listeners[index].onProperty(thiz, pname, null, false)
         	}
         }
@@ -101,6 +110,9 @@ try {
                 return
             }
             for (var index in listeners) {
+                if (listeners[index] == null) {
+                    continue
+                }
                 listeners[index].onProperty(thiz, pname, snapshot.val(), false)
             }
         }
@@ -187,6 +199,9 @@ try {
             }
             var friend = new T_UserP(store, snapshot.val(), false)
             for (var index in listeners) {
+                if (listeners[index] == null) {
+                    continue
+                }
                 listeners[index].onFriendAdded(thiz, friend)
             }
         }
@@ -196,6 +211,9 @@ try {
                 return
             }
             for (var index in listeners) {
+                if (listeners[index] == null) {
+                    continue
+                }
                 listeners[index].onFriendRemoved(thiz, snapshot.val())
             }
         }
@@ -266,6 +284,9 @@ try {
             }
             var pet = new T_VPetP(store, snapshot.val(), isMyStable)
             for (var index in listeners) {
+                if (listeners[index] == null) {
+                    continue
+                }
                 listeners[index].onPetAdded(thiz, pet)
             }
         }
@@ -275,6 +296,9 @@ try {
                 return
             }
             for (var index in listeners) {
+                if (listeners[index] == null) {
+                    continue
+                }
                 listeners[index].onPetRemoved(thiz, snapshot.val())
             }
         }
@@ -341,6 +365,9 @@ try {
             }
             if (snapshot.val() == null) {
                 for (index in listeners) {
+                    if (listeners[index] == null) {
+                        continue
+                    }
                     listeners[index].onDeleted(thiz)
                 }
             }
@@ -351,6 +378,9 @@ try {
                 return
             }
             for (var index in listeners) {
+                if (listeners[index] == null) {
+                    continue
+                }
                 listeners[index].onProperty(thiz, snapshot.name(), snapshot.val(), true)
             }
         }
@@ -360,6 +390,9 @@ try {
                 return
             }
             for (var index in listeners) {
+                if (listeners[index] == null) {
+                    continue
+                }
                 listeners[index].onProperty(thiz, snapshot.name(), null, false)
             }
         }
@@ -369,6 +402,9 @@ try {
                 return
             }
             for (var index in listeners) {
+                if (listeners[index] == null) {
+                    continue
+                }
                 listeners[index].onProperty(thiz, snapshot.name(), snapshot.val(), false)
             }
         }
