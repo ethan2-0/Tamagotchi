@@ -179,32 +179,55 @@ try {
     var T_FriendListP = function(store, userId) {
         var ref = store.getUserRoot().child(userId).child("friends")
         var thiz = this
-        var listener = null
+        var listeners = []
 
         var onFriendAdded = function(snapshot) {
-            if (listener == null) {
+            if (listeners.length == 0) {
                 return
             }
             var friend = new T_UserP(store, snapshot.val(), false)
-            listener.onFriendAdded(thiz, friend)
+            for (var index in listeners) {
+                listeners[index].onFriendAdded(thiz, friend)
+            }
         }
 
         var onFriendRemoved = function(snapshot) {
-            if (listener == null) {
+            if (listeners.length == 0) {
                 return
             }
-            listener.onFriendRemoved(thiz, snapshot.val())
+            for (var index in listeners) {
+                listeners[index].onFriendRemoved(thiz, snapshot.val())
+            }
         }
 
-        this.setListener = function(l) {
-            if (listener != null) {
+        this.addListener = function(l) {
+            for (var index in listeners) {
+                if (listeners[index] == l) {
+                    throw "Attempt to add listener twice"
+                }
+            }
+            if (listeners.length > 0) {
                 ref.off("child_added", onFriendAdded)
                 ref.off("child_removed", onFriendRemoved)
             }
-            listener = l
-            if (listener != null) {
-                ref.on("child_added", onFriendAdded)
-                ref.on("child_removed", onFriendRemoved)
+            listeners.push(l)
+            ref.on("child_added", onFriendAdded)
+            ref.on("child_removed", onFriendRemoved)
+        }
+
+        this.removeListener = function(l) {
+            if (listeners.length == 0) {
+                return
+            }
+            for (var index in listeners) {
+                if (listeners[index] == l) {
+                    listeners.splice(index, 1)
+                    break
+                }
+            }
+            if (listeners.length == 0) {
+                ref.off("child_added", onFriendAdded)
+                ref.off("child_removed", onFriendRemoved)
             }
         }
 
@@ -235,31 +258,55 @@ try {
     var T_StableP = function(store, userId, isMyStable) {
         var ref = store.getUserRoot().child(userId).child("stable")
         var thiz = this
-        var listener = null
+        var listeners = []
 
         var onPetAdded = function(snapshot) {
-            if (listener == null) {
+            if (listeners.length == 0) {
                 return
             }
             var pet = new T_VPetP(store, snapshot.val(), isMyStable)
-            listener.onPetAdded(thiz, pet)
+            for (var index in listeners) {
+                listeners[index].onPetAdded(thiz, pet)
+            }
         }
 
         var onPetRemoved = function(snapshot) {
-            if (listener == null) {
+            if (listeners.length == 0) {
                 return
             }
-            listener.onPetRemoved(thiz, snapshot.val())
+            for (var index in listeners) {
+                listeners[index].onPetRemoved(thiz, snapshot.val())
+            }
         }
 
-        this.setListener = function(l) {
-            listener = l
-            if (listener == null) {
+        this.addListener = function(l) {
+            for (var index in listeners) {
+                if (listeners[index] == l) {
+                    throw "Attempt to add listener twice"
+                }
+            }
+            if (listeners.length > 0) {
                 ref.off("child_added", onPetAdded)
                 ref.off("child_removed", onPetRemoved)
-            } else {
-                ref.on("child_added", onPetAdded)
-                ref.on("child_removed", onPetRemoved)
+            }
+            listeners.push(l)
+            ref.on("child_added", onPetAdded)
+            ref.on("child_removed", onPetRemoved)
+        }
+
+        this.removeListener = function(l) {
+            if (listeners.length == 0) {
+                return
+            }
+            for (var index in listeners) {
+                if (listeners[index] == l) {
+                    listeners.splice(index, 1)
+                    break
+                }
+            }
+            if (listeners.length == 0) {
+                ref.off("child_added", onPetAdded)
+                ref.off("child_removed", onPetRemoved)
             }
         }
 

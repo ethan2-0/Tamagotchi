@@ -249,6 +249,9 @@
 
                     this.onPetAdded = function(src, pet) {
                         var petId = pet.getId()
+                        if (petList[petId] != null) {
+                            return
+                        }
                         li = $("<li></li>").attr({id: "stable_li_" + petId})
                             .append($("<div></div>").attr({id: "stable_div_name_" + petId}))
                             .click(function() {
@@ -268,7 +271,7 @@
                         $(page).find("#stable_li_" + petId).remove()
                     }
                 }()
-                currentUser.getStable().setListener(stableListener)
+                currentUser.getStable().addListener(stableListener)
                 $(page).on('appDestroy', function () {
                     currentUser.getStable().removeListener(stableListener)
                 });
@@ -374,8 +377,6 @@
                             try {
                                 if (pname == "fullName") {
                                     $(page).find("#friends_div_name_" + userId).text(value)
-                                } else if (pname == "thumbnail") {
-                                    $(page).find("#friends_div_img_" + userId).src = value
                                 }
                             } catch (e) {
                                 window.alert("friendListener " + e)
@@ -389,15 +390,18 @@
                     }()
 
                     this.onFriendAdded = function(src, friend) {
-                        lt = $("<li></li>").attr({id: "friends_li_" + friend.getId()})
-                            .append($("<img></img>").attr({id: "friends_div_img_" + friend.getId()}))
-                            .append($("<div></div>").attr({id: "friends_div_name_" + friend.getId()}))
+                        var userId = src.getId()
+                        if (friendsList[userId] != null) {
+                            return
+                        }
+                        li = $("<li></li>").attr({id: "friends_li_" + userId})
+                            .append($("<div></div>").attr({id: "friends_div_name_" + userId}))
                             .click(function() {
                                 App.load("Pet", {friend: friend})
                             })
                         $(page).find("#friends-list-ul").append(li)
                         friend.addListener(friendListener)
-                        friendsList[friend.getId()] = friend
+                        friendsList[userId] = friend
                     }
                     this.onFriendRemoved = function(src, userId) {
                         var friend = friendsList[userId]
@@ -409,7 +413,7 @@
                         $(page).find("#friends_li_" + userId).remove()
                     }
                 }()
-                currentUser.getFriends().setListener(friendsListener)
+                currentUser.getFriends().addListener(friendsListener)
                 $(page).on('appDestroy', function () {
                     currentUser.getFriends().removeListener(stableListener)
                 });
