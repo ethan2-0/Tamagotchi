@@ -1,4 +1,4 @@
-try {
+/*try {*/
     clicked = false;
     //Define food items
     foodItems = new Object;
@@ -126,10 +126,9 @@ try {
         }, 2000);
     }
     //Populate the food images
-    populateFoodImage(foodItems.chocolateBar);
-    populateFoodImage(foodItems.steak);
-
-
+    // TODO: should only be called on pet page
+    //populateFoodImage(foodItems.chocolateBar);
+    //populateFoodImage(foodItems.steak);
 
     //Gets the class corresponding to the happiness "happiness" and health "health". Note that health is used just for the dead face.
     function getHappiness(happiness, health) {
@@ -218,6 +217,9 @@ try {
         setTimeout(renderingTick, 50);
         //Particles
         canvas = EbyID("pet-canvas");
+        if (canvas == null) {
+            return
+        }
         context = canvas.getContext("2d");
         context.clearRect("0", "0", "1920", "1080"); //1920X1080 is overkill, but it won't be in the future :)
         for(i = 0; i < particleList.length; i++) {
@@ -256,6 +258,7 @@ try {
             }
         }
     }
+    /*
 } catch (e) {
     window.alert("Problem loading pet.js " + e)
-}
+}*/
