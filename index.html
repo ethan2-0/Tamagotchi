@@ -220,7 +220,7 @@
                 //alert(document.getElementById("health-bar"));
             })
             //F_C stables populator
-            App.populator("stable", function(page) {
+            App.populator("stable-page", function(page) {
                 currentUser.getStable().setListener(new function() {
                     var petList = []
                     var petListener = new function() {
@@ -398,44 +398,56 @@
             });
 
             // Start-up logic
-            kik.getUser(function(kikUser) {
-                try {
-                    if (!user) {
-                        // TODO
-                        loadPage("no-permission")
-                        return
-                    }
-                    userStore = new T_FireBase(username, null)
-                    currentUser = userStore.getUser()
-                    currentUser.setProperty("username", kikUser.username)
-                    currentUser.setProperty("firstName", kikUser.firstName)
-                    currentUser.setProperty("lastName", kikUser.lastName)
-                    currentUser.setProperty("fullName", kikUser.fullName)
-                    currentUser.setProperty("pic", kikUser.pic)
-                    currentUser.setProperty("thumbnail", kikUser.thumbnail)
+            if (cards && cards.kik) {
+                cards.kik.getUser(function(kikUser) {
                     try {
-                        App.restore()
-                    } catch (e) {
-                        loadPage("stable")
-                    }
-                    if (cards.kik.message) { // web app was opened from Kik message
-                        if (cards.kik.message["kikPetUsername"]) { // web app was opened from Kik message
-                            var friends = currentUser.getFriends()
-                            friends.hasFriend(cards.kik.message.kikPetUsername,
-                                function() {
-                                    // Already a friend
-                                },
-                                function(friends, username) {
-                                    friends.add(username)
-                                }
-                            )
-                            App.load('friend-page', {username: cards.kik.message.kikPetUsername})
+                        if (!user) {
+                            // TODO
+                            loadPage("no-permission")
+                            return
                         }
+                        userStore = new T_FireBase(username, null)
+                        currentUser = userStore.getUser()
+                        currentUser.setProperty("username", kikUser.username)
+                        currentUser.setProperty("firstName", kikUser.firstName)
+                        currentUser.setProperty("lastName", kikUser.lastName)
+                        currentUser.setProperty("fullName", kikUser.fullName)
+                        currentUser.setProperty("pic", kikUser.pic)
+                        currentUser.setProperty("thumbnail", kikUser.thumbnail)
+                        try {
+                            App.restore()
+                        } catch (e) {
+                            loadPage("stable")
+                        }
+                        if (cards.kik.message) { // web app was opened from Kik message
+                            if (cards.kik.message["kikPetUsername"]) { // web app was opened from Kik message
+                                var friends = currentUser.getFriends()
+                                friends.hasFriend(cards.kik.message.kikPetUsername,
+                                    function() {
+                                        // Already a friend
+                                    },
+                                    function(friends, username) {
+                                        friends.add(username)
+                                    }
+                                )
+                                App.load('friend-page', {username: cards.kik.message.kikPetUsername})
+                            }
+                        }
+                    } catch (e) {
+                        window.alert("getUser " + e)
                     }
-                } catch (e) {
-
-                }
-            })
+                })
+            } else {
+                userStore = new T_FireBase("ethanwhite", null)
+                currentUser = userStore.getUser()
+                currentUser.setProperty("username", "ethanwhite")
+                currentUser.setProperty("firstName", "Ethan")
+                currentUser.setProperty("lastName", "White")
+                currentUser.setProperty("fullName", "Ethan White")
+                currentUser.setProperty("pic", "images/undecidedface.png")
+                currentUser.setProperty("thumbnail", "images/sadface.png")                
+                loadPage("stable")
+            }
 
             /*
             if(localStorage.getItem("created") == null) {
