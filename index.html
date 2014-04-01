@@ -87,6 +87,39 @@
                             error("Only alphanumeric names. No spaces.");
                             return;
                         }
+                        if (currentUser == null) {
+                            throw "No current user"
+                        }
+                        var stable = currentUser.getStable()
+                        var stableListener = new function() {
+                            this.onPetAdded = function(src, pet) {
+                                var petId = pet.getId()
+                                if (petList[petId] != null) {
+                                    return
+                                }
+                                li = $("<li></li>").attr({id: "stable_li_" + petId})
+                                    .append($("<div></div>").attr({id: "stable_div_name_" + petId}))
+                                    .click(function() {
+                                        App.load("Pet", {pet: pet})
+                                    })
+                                $(page).find("#stable-ul").prepend(li)
+                                pet.addListener(petListener)
+                                petList[petId] = pet
+                            }
+                            this.onPetRemoved = function(src, petId) {
+                            }
+                        }()
+                        stable.addListener(stableListener)
+
+                        stable.add({
+                            health: 100,
+                            hunger: 100,
+                            happiness: 100,
+                            weight: 50,
+                            age: 0,
+                            birthday: new Date(),
+                            name: name
+                        })
                         /*localStorage.removeItem("pet");
                         pet = [
                             {"Health": 30},
@@ -97,25 +130,8 @@
                         ];
                         alert(pet);
                         localStorage.setItem("pet", pet);*/
-                        localStorage.removeItem("petHealth");
-                        localStorage.setItem("petHealth", 100);
-                        localStorage.removeItem("petHunger");
-                        localStorage.setItem("petHunger", 100);
-                        localStorage.removeItem("petHappiness");
-                        localStorage.setItem("petHappiness", 100);
-                        localStorage.removeItem("petWeight");
-                        localStorage.setItem("petWeight", 50);
-                        localStorage.removeItem("petAge");
-                        localStorage.setItem("petAge", 0);
-                        localStorage.removeItem("petBirthday");
-                        localStorage.setItem("petBirthday", new Date());
 
-                        localStorage.removeItem("petname");
-                        localStorage.setItem("petname", name);
-                        localStorage.removeItem("created");
-                        localStorage.setItem("created", true);
-
-                        loadPage("Pet");
+                        loadPage("Pet", {pet: pet});
                     }
                 </script>
                 <table><tr>
