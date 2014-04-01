@@ -128,12 +128,10 @@
             <canvas width="100" height="100" style="position: absolute; left: 0px; top: 0px;" id="pet-canvas">
             </canvas>
             <div class="app-topbar">
-                <table><tr>
-                    <td class="topbar-icon"><img id="back-image-pet" class="topbar-image" src="images/backArrow.png"></img></td>
-                    <td><div class="app-title">Pet</div></td>
-                    <td style="position: absolute; right: 100px;" class="topbar-icon"><img id="friends-image-pet" class="topbar-image" src="images/friendIconWhite.png"></img></td>
-                    <td style="position: absolute; right: 50px;" class="topbar-icon" style="padding-top: 0px;"><img id="stable-image-pet" class="topbar-image" src="images/stablesIconWhite.png"></img></td>
-                </tr></table>
+                <div class="app-button left" data-back="true">Back</div>
+                <div id="pet-page-title" class="app-title">Pet</div>
+                <div class="app-button right"><img id="pet-friends-image" class="topbar-image" src="images/friendIconWhite.png" style="position: relative; right:100px; vertical-align: middle; width: 64px; height: 32px;"/></div>
+                <div class="app-button right"><img id="pet-stable-image" class="topbar-image" src="images/stablesIconWhite.png" style="vertical-align: middle; width: 64px; height: 32px;"/></div>
             </div>
             <div id="main-pet-div">
                 <span id="error-message-pet" style="color: red; font-weight: bold;"></span>
@@ -311,19 +309,88 @@
                     });
                 */
             });
-            App.populator("Pet", function(page) {
+            App.populator("Pet", function(page, args) {
+                var currentPet = null
+                var friend = null
+                var petListener = new function() {
+                        this.onProperty = function(src, pname, value, isNew) {
+                            var petId = src.getId()
+                            try {
+                                if (pname == "name") {
+                                    EbyID("petname").innerHTML = value
+                                }
+                            } catch (e) {
+                                window.alert("petListener.onProperty " + e)
+                            }
+                        }
+                        this.onDeleted = function(src) {
+                            // TODO
+                        }
+                }()
+                var stableListener = new function() {
+                    this.onPetAdded = function(src, pet) {
+                        var petId = pet.getId()
+                        if (petId != value) {
+                            return
+                        }
+                        currentPet = pet
+                        currentPet.addListener(petListener)
+                    }
+                    this.onPetRemoved = function(src, petId) {
+                        // TODO
+                    }
+                }()
+                var friendListener = new function() {
+                    this.onProperty = function(src, pname, value, isNew) {
+                        var petId = src.getId()
+                        try {
+                            if (pname == "activePet") {
+                                friend.getStable().addListener(stableListener)
+                            }
+                        } catch (e) {
+                            window.alert("petListener.onProperty " + e)
+                        }
+                    }
+                    this.onDeleted = function(src) {
+                        // TODO
+                    }
+                }()
+
+                if (args["friend"] != null) {
+                    friend = args.friend
+                    friend.addListener(friendListener)
+                } else if (args["pet"] != null) {
+                    currentPet = args.pet
+                    currentPet.addListener(petListener)
+                } else {
+                    throw "No pet info"
+                }
+
+                $(page).on('appDestroy', function () {
+                    if (currentPet != null) {
+                        currentPet.removeListener(petListener)
+                    }
+                    if (friend != null) {
+                        friend.removeListener(friendListener)
+                        friend.getStable().removeListener(stableListener)
+                    }
+                });
                 $(page)
                     .on("appShow", function() {
-                        EbyID("petname").innerHTML = localStorage.getItem("petname");
                         window.addEventListener("resize", resizeCanvas, false);
                         resizeCanvas();
                         //Note: For circle on canvas,
                         //context.arc(xpos, ypos, radius, 0, 2 * Math.PI)
                     })
                 $(page)
-                    .find("#stable-image-pet")
+                    .find("#pet-stable-image")
                     .on("click", function() {
                         loadPage("stable-page");
+                    })
+                $(page)
+                    .find("#pet-friends-image")
+                    .on("click", function() {
+                        loadPage("friends-page");
                     })
                 $(page)
                     .find("#back-image-pet")
@@ -379,9 +446,9 @@
                                     $(page).find("#friends_div_name_" + userId).text(value)
                                 }
                                 // Hack
-                                //if (pname == "firstName") {
-                                //    $(page).find("#friends_div_name_" + userId).text(value)
-                                //}
+                                if (pname == "firstName") {
+                                    $(page).find("#friends_div_name_" + userId).text(value)
+                                }
                             } catch (e) {
                                 window.alert("friendListener " + e)
                             }

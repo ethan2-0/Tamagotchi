@@ -18,6 +18,9 @@ function updateProgressBar(progressbar, value, color) {
     progressbar.setAttribute("style", "width: " + (value * 2) + "px; background-color: " + color + ";");
 }
 function getPageName() {
+    if (App.getStack() == null) {
+        return null
+    }
     return App.getStack()[App.getStack().length - 1][0];
 }
 function loadPage(name, transition) {
