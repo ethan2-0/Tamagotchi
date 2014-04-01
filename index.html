@@ -90,28 +90,18 @@
                         if (currentUser == null) {
                             throw "No current user"
                         }
+
                         var stable = currentUser.getStable()
                         var stableListener = new function() {
                             this.onPetAdded = function(src, pet) {
-                                var petId = pet.getId()
-                                if (petList[petId] != null) {
-                                    return
-                                }
-                                li = $("<li></li>").attr({id: "stable_li_" + petId})
-                                    .append($("<div></div>").attr({id: "stable_div_name_" + petId}))
-                                    .click(function() {
-                                        App.load("Pet", {pet: pet})
-                                    })
-                                $(page).find("#stable-ul").prepend(li)
-                                pet.addListener(petListener)
-                                petList[petId] = pet
+                                pet.addListener()
                             }
                             this.onPetRemoved = function(src, petId) {
                             }
                         }()
                         stable.addListener(stableListener)
 
-                        stable.add({
+                        var petId = stable.add({
                             health: 100,
                             hunger: 100,
                             happiness: 100,
@@ -120,6 +110,18 @@
                             birthday: new Date(),
                             name: name
                         })
+                        var stableListener = new function() {
+                            this.onPetAdded = function(src, pet) {
+                                if (pet.getId() == petId) {
+                                    loadPage("Pet", {pet: pet});
+                                    // TODO: not reliable
+                                    stable.removeListener(stableListener)
+                                }
+                            }
+                            this.onPetRemoved = function(src, petId) {
+                            }
+                        }()
+                        stable.addListener(stableListener)
                         /*localStorage.removeItem("pet");
                         pet = [
                             {"Health": 30},
@@ -131,7 +133,7 @@
                         alert(pet);
                         localStorage.setItem("pet", pet);*/
 
-                        loadPage("Pet", {pet: pet});
+                        //loadPage("Pet", {pet: pet});
                     }
                 </script>
                 <table><tr>
@@ -201,7 +203,7 @@
             </div>
             <center id="pet-wrapper">
                 <div id="pet-wrapper-exercise"><div id="pet-image-exercise" class="pet-image happy"></div></div>
-                <span id="petname"></span>
+                <span id="exercise-petname"></span>
             </center>
             <div id="ground-exercise">
             </div>
@@ -222,11 +224,12 @@
                     })
                 $(page)
                     .on("appShow", function() {
+                        /*
                         if(localStorage.getItem("created") == null || localStorage.getItem("created") == false || localStorage.getItem("created") == "false") {
                             EbyID("cancel-create").style.visibility = "hidden";
                         } else {
                             EbyID("cancel-create").style.visibility = "visible";
-                        }
+                        }*/
                     })
                     $(page)
                     .find("#cancel-create")
@@ -251,12 +254,12 @@
                                     $("#stable_div_name_" + petId).text(value)
                                 }
                             } catch (e) {
-                                window.alert("petListener.onProperty " + e)
+                                window.alert("stableListener.onProperty " + e)
                             }
                         }
                         this.onDeleted = function(src) {
                             var petId = src.getId()
-                            src.removeListener(friendListener)
+                            src.removeListener(petListener)
                             $(page).find("#stable_li_" + petId).remove()
                         }
                     }()
@@ -333,7 +336,7 @@
                             var petId = src.getId()
                             try {
                                 if (pname == "name") {
-                                    EbyID("petname").innerHTML = value
+                                    $(page).find("#petname").innerHTML = value
                                 }
                             } catch (e) {
                                 window.alert("petListener.onProperty " + e)
@@ -364,7 +367,7 @@
                                 friend.getStable().addListener(stableListener)
                             }
                         } catch (e) {
-                            window.alert("petListener.onProperty " + e)
+                            window.alert("friendListener.onProperty " + e)
                         }
                     }
                     this.onDeleted = function(src) {
@@ -425,13 +428,17 @@
                     .on("click", function() {
                         if(foodTimeout <= 0) {
                             foodTimeout = 15;
-                            loadPage("exercise-page");
+                            App.load("exercise-page", {pet: currentPet});
                         } else {
                             setPetError("Please wait " + foodTimeout + " seconds.");
                         }
                     });
             });
-            App.populator("exercise-page", function(page) {
+            App.populator("exercise-page", function(page, args) {
+                if (args["pet"] == null) {
+                    throw "Missing pet arg"
+                }
+                var pet = args.pet
                 $(page)
                     .find("#back-image-exercise")
                     .on("click", function() {
@@ -447,8 +454,22 @@
                         //Do nothing
                     });
                 }, 6100);
-                EbyID("petname").innerHTML = localStorage.getItem("petname");
-
+                var petListener = new function() {
+                    this.onProperty = function(src, pname, value, isNew) {
+                        try {
+                            if (pname == "name") {
+                                $(page).find("#exercise-petname").innerHTML = value;
+                                pet.removeListener(petListener)
+                            }
+                        } catch (e) {
+                            window.alert("petListener.onProperty " + e)
+                        }
+                    }
+                    this.onDeleted = function(src) {
+                        // TODO
+                    }
+                }()
+                pet.addListener(petListener)
             });
             // Friend list populator
             App.populator("friends-page", function(page) {
