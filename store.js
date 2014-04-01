@@ -174,7 +174,7 @@ try {
     }
 
     /**
-     * username --> hash(username)
+     * hash(username) --> hash(username)
      */
     var T_FriendListP = function(store, userId) {
         var ref = store.getUserRoot().child(userId).child("friends")
@@ -197,11 +197,12 @@ try {
         }
 
         this.setListener = function(l) {
-            listener = l
-            if (listener == null) {
+            if (listener != null) {
                 ref.off("child_added", onFriendAdded)
                 ref.off("child_removed", onFriendRemoved)
-            } else {
+            }
+            listener = l
+            if (listener != null) {
                 ref.on("child_added", onFriendAdded)
                 ref.on("child_removed", onFriendRemoved)
             }
@@ -209,11 +210,21 @@ try {
 
         this.add = function(username) {
             var hashed = MD5(username)
-            ref.child(username).set(hashed)
+            ref.child(hashed).set(hashed)
         }
 
         this.remove = function(username) {
-            ref.child(username).remove()
+            ref.child(MD5(username)).remove()
+        }
+
+        this.hasFriend = function(username, onSuccess, onFail) {
+            ref.once('value', function(snapshot) {
+                if (snapshot.hasChild(MD5(username))) {
+                    onSuccess(thiz, username)
+                } else {
+                    onFail(thiz, username)
+                }
+            })
         }
     }
 

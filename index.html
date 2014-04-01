@@ -14,24 +14,46 @@
         <meta name="description" content="A Tamagotchi pet written in HTML5. Optimized for Kik Messenger.">
         <link rel="kik-icon" href="images/smileyface.png">
         <link rel="canonical" href="http://example.com/prod/">
+
+        <script src="pet.js"></script>
+        <!--TODO-->
+        <!--<link rel="terms" href="path/to/terms/of/use.html">-->
+        <!--<link rel="privacy" href="path/to/privacy/policy.html">-->
     </head>
     <body id="thebody" onmousedown="setClick(true)" onmouseup="setClick(false)" ontouchstart="setClick(true)" ontouchend="setClick(false)" ontouchmove="scratchPet(event)">
         <!-- F_C stables -->
-        <div class="app-page" data-page="stables">
+        <div class="app-page" data-page="stable-page">
             <div class="app-topbar">
                 <table><tr>
-                    <td class="topbar-icon"><img id="back-image-stables" class="topbar-image" src="images/backArrow.png"></img></td>
-                    <td><div class="app-title">Stables</div></td>
-                    <td style="position: absolute; right: 50px;" class="topbar-icon"><img id="friends-image-stables" class="topbar-image" src="images/friendIconWhite.png"></img></td>
+                    <td class="topbar-icon"><img id="back-image-stable" class="topbar-image" src="images/backArrow.png"></img></td>
+                    <td><div class="app-title">Stable</div></td>
+                    <td style="position: absolute; right: 50px;" class="topbar-icon"><img id="friends-image-stable" class="topbar-image" src="images/friendIconWhite.png"></img></td>
                 </tr></table>
             </div>
-            <div id="stables-pets">
-                <div id="pet-display-1" class="pet-display">
-                </div>
+            <ul id="stable-ul" class="app-list">
+                <li>
+                    <div id="pet-display-new" class="pet-display">
+                        <div id="add-pet" style="text-shadow: 0px 0px 10px white;">+</div>
+                    </div>
+                </li>
+            </ul>
+            <div id="stable-pets">
                 <div id="pet-display-new" class="pet-display">
                     <div id="add-pet" style="text-shadow: 0px 0px 10px white;">+</div>
                 </div>
             </div>
+        </div>
+        <!-- Friends -->
+        <div class="app-page" data-page="friends-page">
+            <div class="app-topbar">
+                <table><tr>
+                    <td class="topbar-icon"><img id="back-image-stable" class="topbar-image" src="images/backArrow.png"></img></td>
+                    <td><div class="app-title">Stable</div></td>
+                    <td style="position: absolute; right: 50px;" class="topbar-icon"><img id="friends-image-stable" class="topbar-image" src="images/friendIconWhite.png"></img></td>
+                </tr></table>
+            </div>
+            <ul id="friends-list-ul" class="app-list">
+            </ul>
         </div>
         <!-- F_C creator -->
         <div class="app-page" data-page="creator">
@@ -104,7 +126,7 @@
                     <td class="topbar-icon"><img id="back-image-pet" class="topbar-image" src="images/backArrow.png"></img></td>
                     <td><div class="app-title">Pet</div></td>
                     <td style="position: absolute; right: 100px;" class="topbar-icon"><img id="friends-image-pet" class="topbar-image" src="images/friendIconWhite.png"></img></td>
-                    <td style="position: absolute; right: 50px;" class="topbar-icon" style="padding-top: 0px;"><img id="stables-image-pet" class="topbar-image" src="images/stablesIconWhite.png"></img></td>
+                    <td style="position: absolute; right: 50px;" class="topbar-icon" style="padding-top: 0px;"><img id="stable-image-pet" class="topbar-image" src="images/stablesIconWhite.png"></img></td>
                 </tr></table>
             </div>
             <div id="main-pet-div">
@@ -172,263 +194,6 @@
         <script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
         <!-- My code -->
         <script type="text/javascript">
-            clicked = false;
-            //Define food items
-            foodItems = new Object;
-            foodItemList = new Array();
-
-
-            foodItems.chocolateBar = new Object;
-            foodItems.chocolateBar.happiness = 5;
-            foodItems.chocolateBar.weight = 15;
-            foodItems.chocolateBar.hunger = 8;
-            foodItems.chocolateBar.image = "images/chocolateBar.png";
-            foodItems.chocolateBar.displayName = "Chocolate Bar";
-            foodItems.chocolateBar.name = "chocolateBar";
-            foodItemList[0] = foodItems.chocolateBar;
-
-            foodItems.steak = new Object;
-            foodItems.steak.happiness = 0;
-            foodItems.steak.weight = 4;
-            foodItems.steak.hunger = 15;
-            foodItems.steak.image = "images/steak.png";
-            foodItems.steak.displayName = "Steak";
-            foodItems.steak.name = "steak";
-            foodItemList[1] = foodItems.steak;
-
-            particleList = new Array();
-
-            petDisplayNumber = 0;
-            function populateFoodImage(item, container) {
-                if(container == null) {
-                    container = EbyID("food-section");
-                }
-                html  = '<img class="food-image" src="';
-                html += item.image;
-                html += '" id="food-item-' + item.name;
-                html += '" onclick="selectFoodItem(\'' + item.name + '\')"></img>';
-                container.innerHTML += html;
-            }
-            foodTimeout = 0;
-            //Note that particles only work in the area above the bars, etc. This is to fix issue #1. See the docs for this page for more info.
-            function Particle(color, size, gravity, x, y) {
-                this.size = size;
-                this.color = color;
-                this.gravity = gravity;
-                this.left = x;
-                this.top = y;
-                this.ticksLived = 0;
-                //Actually create the element
-                this.draw = function() {
-                    canvas = EbyID("pet-canvas");
-                    context = canvas.getContext("2d");
-                    context.fillStyle = this.color;
-                    context.fillRect(this.left, this.top, this.size, size);
-                };
-                this.update = function() {
-                    this.top += this.gravity;
-                    this.draw();
-                    this.ticksLived++;
-                    if(this.ticksLived > 20) {
-                        index = particleList.indexOf(this);
-                        particleList.splice(index, 1);
-                    }
-                };
-                particleList.push(this);
-            }
-            //Occurs when a food item is clicked on the page.
-            function selectFoodItem(name) {
-                if(EbyID("food-item-" + name).getAttribute("style") == "" || EbyID("food-item-" + name).getAttribute("style") == null) {
-                    if(foodTimeout <= 0) {
-                        EbyID("food-item-" + name).setAttribute("style", "background-color: black;");
-                    } else {
-                        EbyID("food-item-" + name).setAttribute("style", "background-color: red;");
-                        setPetError("Please wait " + foodTimeout + " seconds.");
-                        setTimeout(function() {
-                            EbyID("food-item-" + name).setAttribute("style", "");
-                        }, 100);
-                        return;
-                    }
-                    foodItem = null;
-                    for(i = 0; i < foodItemList.length; i++) {
-                        if(foodItemList[i].name == name) {
-                            foodItem = foodItemList[i];
-                        }
-                    }
-                    feedPet(foodItem);
-                    foodTimeout = 10;
-                    setTimeout(function() {
-                        EbyID("food-item-" + name).setAttribute("style", "");
-                    }, 100);
-                }
-            }
-            //F_C feedPet
-            function feedPet(item) {
-                //throw ((getItem("petWeight") / 1) + item.weight);
-                if((getItem("petWeight") / 1) + item.weight > 100) {
-                    localStorage.setItem("petWeight", 100);
-                    addItem("petHealth", -(Math.floor(item.weight / 2)));
-                } else {
-                    addItem("petWeight", item.weight);
-                    addItem("petHealth", -(Math.floor(item.weight / 2)));
-                }
-                if((getItem("petHunger") / 1) + item.hunger > 100) {
-                    localStorage.setItem("petHunger", 100);
-                } else {
-                    addItem("petHunger", item.hunger);
-                }
-                if((getItem("petHappiness") / 1) + item.happiness > 100) {
-                    localStorage.setItem("petHappiness", 100);
-                } else {
-                    addItem("petHappiness", item.happiness);
-                }
-                updateRendering();
-            }
-            errorWillBeCleared = false;
-            function setPetError(error) {
-                EbyID("error-message-pet").innerHTML = error;
-                errorWillBeCleared = true;
-                setTimeout(function() {
-                    //Clear it after some time
-                    if(errorWillBeCleared) {
-                        EbyID("error-message-pet").innerHTML = "";
-                        errorWillBeCleared = false;
-                    } else {
-                        return;
-                    }
-                }, 2000);
-            }
-            //Populate the food images
-            populateFoodImage(foodItems.chocolateBar);
-            populateFoodImage(foodItems.steak);
-
-
-
-            //Gets the class corresponding to the happiness "happiness" and health "health". Note that health is used just for the dead face.
-            function getHappiness(happiness, health) {
-                if(happiness == null) {
-                    happiness = localStorage.getItem("petHappiness");
-                }
-                if(health == null) {
-                    health = localStorage.getItem("petHealth");
-                }
-                if(health < 5) {
-                    return "dead";
-                }
-                if(happiness < 33) {
-                    return "unhappy"
-                }
-                if(happiness < 66) {
-                    return "undecided"
-                }
-                return "happy";
-            }
-            jumpMomentum = 0;
-            jumpY = 100;
-            function doJump() {
-                for(i = 0; i < 300; i++) {
-                    setTimeout(jumpOnce, 200 + (i * 20));
-                }
-                //EbyID("petname").innerHTML = "hi";
-            }
-            function jumpOnce() {
-                //EbyID("petname").innerHTML = "hi2";
-                //EbyID("petname").innerHTML = jumpY;
-                jumpMomentum++;
-                jumpY += jumpMomentum;
-                if(jumpY >= 300) {
-                    jumpMomentum = -(Math.floor(Math.random() * 5) + 15);
-                }
-                EbyID("pet-wrapper-exercise").setAttribute("style", "padding-top: " + jumpY + "px;");
-                EbyID("ground-exercise").setAttribute("style", "margin-top: " + (300 - jumpY) + "px;");
-            }
-            function doDance() {
-                EbyID("other-petpage-stuff").setAttribute("style", "visibility: hidden;");
-                dance(EbyID("pet-wrapper"));
-                setTimeout(function() {
-                    EbyID("other-petpage-stuff").setAttribute("style", "");
-                }, 241 * 20);
-            }
-            function creatorLater() {
-                loadPage("creator");
-            }
-            function populatePetDisplay(display, name, happiness, health) {
-                if(health == null) {
-                    health = localStorage.getItem("petHealth");
-                }
-                if(happiness == null) {
-                    happiness = localStorage.getItem("petHappiness");
-                }
-                s =  '<table><tr>';
-                s += '    <td class="pet-display-item"><div class="pet-image ' + getHappiness(happiness, health) + '"></div></td>\n'
-                s += '    <td class="pet-display-item"><div class="pet-display-name title">' + name + '</div></td>';
-                s += '</tr></table>';
-                display.innerHTML = s;
-            }
-            //Happens slowly
-            function updateRendering() {
-                setTimeout(updateRendering, 100);
-            }
-            setTimeout(renderingTick, 50);
-            function resizeCanvas() {
-                canvas = EbyID("pet-canvas");
-                canvas.width = window.innerWidth;
-                //To fix issue #1, this has been changed from the following line to how it is now:
-                //canvas.height = window.innerHeight;
-                canvas.height = 325;
-            }
-            function tick() {
-                //alert(document.getElementById("health-bar"));
-                //alert(App.getStack()[App.getStack().length - 1]);
-                if(foodTimeout > 0) {
-                    foodTimeout--;
-                }
-                changeThePet();
-                setTimeout(tick, 1000);
-            }
-            setTimeout(tick, 1000);
-            function renderingTick() {
-                setTimeout(renderingTick, 50);
-                //Particles
-                canvas = EbyID("pet-canvas");
-                context = canvas.getContext("2d");
-                context.clearRect("0", "0", "1920", "1080"); //1920X1080 is overkill, but it won't be in the future :)
-                for(i = 0; i < particleList.length; i++) {
-                    particleList[i].update();
-                }
-                //Updating the pet page
-                if(getPageName() == "Pet") {
-                    updateProgressBar(document.getElementById("health-bar"), localStorage.getItem("petHealth"));
-                    updateProgressBar(document.getElementById("hunger-bar"), localStorage.getItem("petHunger"));
-                    updateProgressBar(document.getElementById("happiness-bar"), localStorage.getItem("petHappiness"));
-                    updateProgressBar(document.getElementById("weight-bar"), localStorage.getItem("petWeight"), "black");
-                    EbyID("pet-age").innerHTML = localStorage.getItem("petAge");//Math.floor((new Date().getTime() - localStorage.getItem("petBirthday").getTime()) / 60) + " minutes";
-                    EbyID("pet-image").setAttribute("class", "pet-image " + getHappiness());
-                }
-                //Updating the exercise page
-                if(getPageName() == "exercise-page") {
-                    EbyID("pet-image-exercise").setAttribute("class", "pet-image " + getHappiness());
-                }
-            };
-            setTimeout(renderingTick, 50);
-            function setClick(value) {
-                clicked = value;
-            }
-            petScratches = 0;
-            function scratchPet(evt) {
-                petScratches++;
-                if(petScratches % 6 == 0) {
-                    touch = evt.changedTouches[0];
-                    boundingRect = EbyID("pet-image").getBoundingClientRect();
-                    if((touch.clientX - boundingRect.left < 128 && touch.clientX - boundingRect.left > 0) &&
-                        (touch.clientY - boundingRect.top < 128 && touch.clientY - boundingRect.top > 0)) {
-                        p = new Particle("#464646", 5, 1, touch.clientX, touch.clientY);
-                        if(petScratches % 16 == 0 && getItem("petHappiness") / 1 < 100) {
-                            addItem("petHappiness", 1);
-                        }
-                    }
-                }
-            }
             App.populator("creator", function(page) {
                 $(page)
                     .find("#createButton")
@@ -455,7 +220,51 @@
                 //alert(document.getElementById("health-bar"));
             })
             //F_C stables populator
-            App.populator("stables", function(page) {
+            App.populator("stable", function(page) {
+                currentUser.getStable().setListener(new function() {
+                    var petList = []
+                    var petListener = new function() {
+                        this.onProperty = function(src, pname, value, isNew) {
+                            var petId = src.getId()
+                            try {
+                                if (pname == "name") {
+                                    $(page).find("#stable_div_name_" + petId).text(value)
+                                } else if (pname == "thumbnail") {
+                                    $(page).find("#stable_div_img_" + userId).src = value
+                                }
+                            } catch (e) {
+                                window.alert("petListener.onProperty " + e)
+                            }
+                        }
+                        this.onDeleted = function(src) {
+                            var petId = src.getId()
+                            src.removeListener(friendListener)
+                            $(page).find("#stable_li_" + petId).remove()
+                        }
+                    }()
+
+                    this.onPetAdded = function(src, pet) {
+                        var petId = pet.getId()
+                        lt = $("<li></li>").attr({id: "stable_li_" + petId})
+                            .append($("<img></img>").attr({id: "stable_div_img_" + petId}))
+                            .append($("<div></div>").attr({id: "stable_div_name_" + petId}))
+                            .click(function() {
+                                App.load("Pet", {pet: pet})
+                            })
+                        $(page).find("#stable-ul").append(li)
+                        pet.addListener(petListener)
+                        petList[petId] = pet
+                    }
+                    this.onPetRemoved = function(src, petId) {
+                        var pet = petList[petId]
+                        if (pet == null) {
+                            return
+                        }
+                        pet[petId] = null
+                        pet.removeListener(petListener)
+                        $(page).find("#stable_li_" + petId).remove()
+                    }
+                }())
                 $(page)
                 .on("appShow", function() {
                     populatePetDisplay(EbyID("pet-display-1"), localStorage.getItem("petname"));
@@ -472,7 +281,7 @@
                         setTimeout(creatorLater, 125);
                     });
                 $(page)
-                    .find("#back-image-stables")
+                    .find("#back-image-stable")
                     .on("click", function() {
                         App.back(function() {
                             //Do nothing
@@ -493,9 +302,9 @@
                         //context.arc(xpos, ypos, radius, 0, 2 * Math.PI)
                     })
                 $(page)
-                    .find("#stables-image-pet")
+                    .find("#stable-image-pet")
                     .on("click", function() {
-                        loadPage("stables");
+                        loadPage("stable");
                     })
                 $(page)
                     .find("#back-image-pet")
@@ -537,7 +346,96 @@
                     });
                 }, 6100);
                 EbyID("petname").innerHTML = localStorage.getItem("petname");
+
             });
+            // Friend list populator
+            App.populator("friends-page", function(page) {
+                currentUser.getFriends().setListener(new function() {
+                    var friendsList = []
+                    var friendListener = new function() {
+                        this.onProperty = function(src, pname, value, isNew) {
+                            var userId = src.getId()
+                            try {
+                                if (pname == "fullName") {
+                                    $(page).find("#friends_div_name_" + userId).text(value)
+                                } else if (pname == "thumbnail") {
+                                    $(page).find("#friends_div_img_" + userId).src = value
+                                }
+                            } catch (e) {
+                                window.alert("friendListener " + e)
+                            }
+                        }
+                        this.onDeleted = function(src) {
+                            var userId = src.getId()
+                            src.removeListener(friendListener)
+                            $(page).find("#friends_li_" + userId).remove()
+                        }
+                    }()
+
+                    this.onFriendAdded = function(src, friend) {
+                        lt = $("<li></li>").attr({id: "friends_li_" + friend.getId()})
+                            .append($("<img></img>").attr({id: "friends_div_img_" + friend.getId()}))
+                            .append($("<div></div>").attr({id: "friends_div_name_" + friend.getId()}))
+                            .click(function() {
+                                App.load("Pet", {friend: friend})
+                            })
+                        $(page).find("#friends-list-ul").append(li)
+                        friend.addListener(friendListener)
+                        friendsList[friend.getId()] = friend
+                    }
+                    this.onFriendRemoved = function(src, userId) {
+                        var friend = friendsList[userId]
+                        if (friend == null) {
+                            return
+                        }
+                        friendsList[userId] = null
+                        friend.removeListener(friendListener)
+                        $(page).find("#friends_li_" + userId).remove()
+                    }
+                }())
+            });
+
+            // Start-up logic
+            kik.getUser(function(kikUser) {
+                try {
+                    if (!user) {
+                        // TODO
+                        loadPage("no-permission")
+                        return
+                    }
+                    userStore = new T_FireBase(username, null)
+                    currentUser = userStore.getUser()
+                    currentUser.setProperty("username", kikUser.username)
+                    currentUser.setProperty("firstName", kikUser.firstName)
+                    currentUser.setProperty("lastName", kikUser.lastName)
+                    currentUser.setProperty("fullName", kikUser.fullName)
+                    currentUser.setProperty("pic", kikUser.pic)
+                    currentUser.setProperty("thumbnail", kikUser.thumbnail)
+                    try {
+                        App.restore()
+                    } catch (e) {
+                        loadPage("stable")
+                    }
+                    if (cards.kik.message) { // web app was opened from Kik message
+                        if (cards.kik.message["kikPetUsername"]) { // web app was opened from Kik message
+                            var friends = currentUser.getFriends()
+                            friends.hasFriend(cards.kik.message.kikPetUsername,
+                                function() {
+                                    // Already a friend
+                                },
+                                function(friends, username) {
+                                    friends.add(username)
+                                }
+                            )
+                            App.load('friend-page', {username: cards.kik.message.kikPetUsername})
+                        }
+                    }
+                } catch (e) {
+
+                }
+            })
+
+            /*
             if(localStorage.getItem("created") == null) {
                 localStorage.setItem("created", false)
             }
@@ -546,6 +444,7 @@
             } else {
                 loadPage("creator");
             }
+            */
         </script>
         <!-- F_C IOS styles -->
         <!-- Special stylesheet for IOS.
