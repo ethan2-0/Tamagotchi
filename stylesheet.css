@@ -97,6 +97,12 @@ div.progressbar-front {
 .active-pet-row {
     background-color: rgb(167, 167, 154);
 }
+.activate-pet-button {
+    background-color: rgb(167, 167, 154);
+}
+.deactivate-pet-button {
+    visibility: hidden;
+}
 .food-image {
     border: 1px solid black;
     margin-right: 5px;

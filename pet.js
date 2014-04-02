@@ -26,7 +26,19 @@ PetRenderingEngine = function(page, pet) {
         }
     }
 
+    this.activate = function() {
+        this.setItem("lastVisited", new Date().getTime())
+        this.commit()
+    }
+
+    this.deactivate = function() {
+        this.background()
+    }
+
     this.foreground = function() {
+        if (this.isForeground) {
+            return
+        }
         this.isForeground = true
         var toTick = 1
         if (this.lastVisited != null) {
@@ -39,6 +51,9 @@ PetRenderingEngine = function(page, pet) {
     }
 
     this.background = function() {
+        if (!this.isForeground) {
+            return
+        }
         this.isForeground = false
         this.setItem("lastVisited", new Date().getTime())
         this.commit()

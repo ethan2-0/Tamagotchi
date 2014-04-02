@@ -446,6 +446,10 @@ try {
             }
         }
 
+        this.setProperty = function(pname, value) {
+            ref.child(pname).set(value)
+        }
+
         this.update = function(petInfo) {
             ref.set(petInfo)
         }
