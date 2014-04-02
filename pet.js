@@ -1,5 +1,4 @@
-/*try {*/
-    clicked = false;
+PetRenderingEngine = function(page, petEngine) {
     //Define food items
     foodItems = new Object;
     foodItemList = new Array();
@@ -26,17 +25,16 @@
     particleList = new Array();
 
     petDisplayNumber = 0;
-    function populateFoodImage(item, container) {
-        if(container == null) {
-            container = EbyID("food-section");
-        }
-        html  = '<img class="food-image" src="';
-        html += item.image;
-        html += '" id="food-item-' + item.name;
-        html += '" onclick="selectFoodItem(\'' + item.name + '\')"></img>';
-        container.innerHTML += html;
+    this.populateFoodImage = function(item) {
+        var img = $("<img></img>")
+            .attr({src: item.image})
+            .attr({id: "food-item-" + item.name})
+            .click(function() {
+                selectFoodItem(item.name)
+            })
+        $(page).find("#food-section").append(img)
     }
-    foodTimeout = 0;
+    this.foodTimeout = 0;
     //Note that particles only work in the area above the bars, etc. This is to fix issue #1. See the docs for this page for more info.
     function Particle(color, size, gravity, x, y, type, permanent) {
         if(permanent == null) {
@@ -52,7 +50,7 @@
         this.type = type;
         //Add functions
         this.draw = function() {
-            canvas = EbyID("pet-canvas");
+            canvas = $(page).find("#pet-canvas")[0];
             context = canvas.getContext("2d");
             /*context.fillStyle = this.color;
             context.fillRect(this.left, this.top, this.size, size);*/
@@ -90,14 +88,15 @@
     }
     //Occurs when a food item is clicked on the page.
     function selectFoodItem(name) {
-        if(EbyID("food-item-" + name).getAttribute("style") == "" || EbyID("food-item-" + name).getAttribute("style") == null) {
-            if(foodTimeout <= 0) {
-                EbyID("food-item-" + name).setAttribute("style", "background-color: black;");
+        var foodItemEl = $(page).find("#food-item-" + name)[0]
+        if(foodItemEl.getAttribute("style") == "" || foodItemEl.getAttribute("style") == null) {
+            if (this.foodTimeout <= 0) {
+                foodItemEl.setAttribute("style", "background-color: black;");
             } else {
-                EbyID("food-item-" + name).setAttribute("style", "background-color: red;");
-                setPetError("Please wait " + foodTimeout + " seconds.");
+                foodItemEl.setAttribute("style", "background-color: red;");
+                this.setPetError("Please wait " + this.foodTimeout + " seconds.");
                 setTimeout(function() {
-                    EbyID("food-item-" + name).setAttribute("style", "");
+                    foodItemEl.setAttribute("style", "");
                 }, 100);
                 return;
             }
@@ -108,42 +107,42 @@
                 }
             }
             feedPet(foodItem);
-            foodTimeout = 10;
+            this.foodTimeout = 10;
             setTimeout(function() {
-                EbyID("food-item-" + name).setAttribute("style", "");
+                foodItemEl.setAttribute("style", "");
             }, 100);
         }
     }
     //F_C feedPet
     function feedPet(item) {
         //throw ((getItem("petWeight") / 1) + item.weight);
-        if((getItem("petWeight") / 1) + item.weight > 100) {
-            localStorage.setItem("petWeight", 100);
-            addItem("petHealth", -(Math.floor(item.weight / 2)));
+        if((petEngine.getItem("petWeight") / 1) + item.weight > 100) {
+            petEngine.setItem("petWeight", 100);
+            petEngine.addItem("petHealth", -(Math.floor(item.weight / 2)));
         } else {
-            addItem("petWeight", item.weight);
-            addItem("petHealth", -(Math.floor(item.weight / 2)));
+            petEngine.addItem("petWeight", item.weight);
+            petEngine.addItem("petHealth", -(Math.floor(item.weight / 2)));
         }
-        if((getItem("petHunger") / 1) + item.hunger > 100) {
-            localStorage.setItem("petHunger", 100);
+        if((petEngine.getItem("petHunger") / 1) + item.hunger > 100) {
+            petEngine.setItem("petHunger", 100);
         } else {
-            addItem("petHunger", item.hunger);
+            petEngine.addItem("petHunger", item.hunger);
         }
-        if((getItem("petHappiness") / 1) + item.happiness > 100) {
-            localStorage.setItem("petHappiness", 100);
+        if((petEngine.getItem("petHappiness") / 1) + item.happiness > 100) {
+            petEngine.setItem("petHappiness", 100);
         } else {
-            addItem("petHappiness", item.happiness);
+            petEngine.addItem("petHappiness", item.happiness);
         }
-        updateRendering();
+        petEngine.commit()
     }
     errorWillBeCleared = false;
-    function setPetError(error) {
-        EbyID("error-message-pet").innerHTML = error;
+    this.setPetError = function(error) {
+        $(page).find("#error-message-pet").innerHTML = error;
         errorWillBeCleared = true;
         setTimeout(function() {
             //Clear it after some time
             if(errorWillBeCleared) {
-                EbyID("error-message-pet").innerHTML = "";
+                $(page).find("#error-message-pet").innerHTML = "";
                 errorWillBeCleared = false;
             } else {
                 return;
@@ -158,10 +157,10 @@
     //Gets the class corresponding to the happiness "happiness" and health "health". Note that health is used just for the dead face.
     function getHappiness(happiness, health) {
         if(happiness == null) {
-            happiness = localStorage.getItem("petHappiness");
+            happiness = petEngine.getItem("petHappiness");
         }
         if(health == null) {
-            health = localStorage.getItem("petHealth");
+            health = petEngine.getItem("petHealth");
         }
         if(health < 5) {
             return "dead";
@@ -174,30 +173,11 @@
         }
         return "happy";
     }
-    jumpMomentum = 0;
-    jumpY = 100;
-    function doJump() {
-        for(i = 0; i < 300; i++) {
-            setTimeout(jumpOnce, 200 + (i * 20));
-        }
-        //EbyID("petname").innerHTML = "hi";
-    }
-    function jumpOnce() {
-        //EbyID("petname").innerHTML = "hi2";
-        //EbyID("petname").innerHTML = jumpY;
-        jumpMomentum++;
-        jumpY += jumpMomentum;
-        if(jumpY >= 300) {
-            jumpMomentum = -(Math.floor(Math.random() * 5) + 15);
-        }
-        EbyID("pet-wrapper-exercise").setAttribute("style", "padding-top: " + jumpY + "px;");
-        EbyID("ground-exercise").setAttribute("style", "margin-top: " + (300 - jumpY) + "px;");
-    }
-    function doDance() {
-        EbyID("other-petpage-stuff").setAttribute("style", "visibility: hidden;");
-        dance(EbyID("pet-wrapper"));
+    this.doDance = function() {
+        $(page).find("#other-petpage-stuff").attr({"style": "visibility: hidden;"});
+        petEngine.dance($(page).find("#pet-wrapper"));
         setTimeout(function() {
-            EbyID("other-petpage-stuff").setAttribute("style", "");
+            $(page).find("#other-petpage-stuff").attr({"style": ""});
         }, 241 * 20);
     }
     function creatorLater() {
@@ -205,10 +185,10 @@
     }
     function populatePetDisplay(display, name, happiness, health) {
         if(health == null) {
-            health = localStorage.getItem("petHealth");
+            health = petEngine.getItem("petHealth");
         }
         if(happiness == null) {
-            happiness = localStorage.getItem("petHappiness");
+            happiness = petEngine.getItem("petHappiness");
         }
         s =  '<table><tr>';
         s += '    <td class="pet-display-item"><div class="pet-image ' + getHappiness(happiness, health) + '"></div></td>\n'
@@ -216,13 +196,9 @@
         s += '</tr></table>';
         display.innerHTML = s;
     }
-    //Happens slowly
-    function updateRendering() {
-        setTimeout(updateRendering, 100);
-    }
     setTimeout(renderingTick, 50);
-    function resizeCanvas() {
-        canvas = EbyID("pet-canvas");
+    this.resizeCanvas = function() {
+        canvas = $(page).find("#pet-canvas")[0];
         canvas.width = window.innerWidth;
         //To fix issue #1, this has been changed from the following line to how it is now:
         //canvas.height = window.innerHeight;
@@ -231,10 +207,10 @@
     function tick() {
         //alert(document.getElementById("health-bar"));
         //alert(App.getStack()[App.getStack().length - 1]);
-        if(foodTimeout > 0) {
-            foodTimeout--;
+        if(this.foodTimeout > 0) {
+            this.foodTimeout--;
         }
-        changeThePet();
+        petEngine.changeThePet();
         setTimeout(tick, 1000);
         if(randomInteger(1000) > 998) {
             createDropping();
@@ -244,7 +220,7 @@
     function renderingTick() {
         setTimeout(renderingTick, 50);
         //Particles
-        canvas = EbyID("pet-canvas");
+        canvas = $(page).find("#pet-canvas")[0];
         if (canvas == null) {
             return
         }
@@ -255,26 +231,22 @@
         }
         //Updating the pet page
         if(getPageName() == "Pet") {
-            updateProgressBar(document.getElementById("health-bar"), localStorage.getItem("petHealth"));
-            updateProgressBar(document.getElementById("hunger-bar"), localStorage.getItem("petHunger"));
-            updateProgressBar(document.getElementById("happiness-bar"), localStorage.getItem("petHappiness"));
-            updateProgressBar(document.getElementById("weight-bar"), localStorage.getItem("petWeight"), "black");
-            EbyID("pet-age").innerHTML = localStorage.getItem("petAge");//Math.floor((new Date().getTime() - localStorage.getItem("petBirthday").getTime()) / 60) + " minutes";
-            EbyID("pet-image").setAttribute("class", "pet-image " + getHappiness());
+            updateProgressBar($(page).find("#health-bar")[0], petEngine.getItem("petHealth"));
+            updateProgressBar($(page).find("#hunger-bar")[0], petEngine.getItem("petHunger"));
+            updateProgressBar($(page).find("#happiness-bar")[0], petEngine.getItem("petHappiness"));
+            updateProgressBar($(page).find("#weight-bar")[0], petEngine.getItem("petWeight"), "black");
+            $(page).find("#pet-age").innerHTML = petEngine.getItem("petAge");//Math.floor((new Date().getTime() - localStorage.getItem("petBirthday").getTime()) / 60) + " minutes";
+            $(page).find("#pet-image").attr({"class": "pet-image " + getHappiness()});
         }
         //Updating the exercise page
         if(getPageName() == "exercise-page") {
-            EbyID("pet-image-exercise").setAttribute("class", "pet-image " + getHappiness());
+            $(page).find("#pet-image-exercise").attr({"class": "pet-image " + getHappiness()});
         }
     };
-    setTimeout(renderingTick, 50);
-    function setClick(value) {
-        clicked = value;
-    }
     petScratches = 0;
-    function scratchPet(evt) {
+    this.scratchPet = function(evt) {
         petScratches++;
-        touch = evt.changedTouches[0];
+        touch = evt.originalEvent.changedTouches[0];
         for(i = 0; i < particleList.length; i++) {
             particle = particleList[i];
             if(particle.type == "dropping") {
@@ -288,17 +260,40 @@
             }
         }
         if(petScratches % 8 == 0) {
-            boundingRect = EbyID("pet-image").getBoundingClientRect();
+            boundingRect = $(page).find("#pet-image")[0].getBoundingClientRect();
             if((touch.clientX - boundingRect.left < 128 && touch.clientX - boundingRect.left > 0) &&
                 (touch.clientY - boundingRect.top < 128 && touch.clientY - boundingRect.top > 0)) {
                 p = new Particle("#464646", 2, 1, touch.clientX, touch.clientY, "scratch");
-                if(petScratches % 32 == 0 && getItem("petHappiness") / 1 < 100) {
-                    addItem("petHappiness", 1);
+                if(petScratches % 32 == 0) {
+                    var xx = petEngine.getItem("petHappiness") / 1
+                    if (xx < 100) {
+                        petEngine.addItem("petHappiness", 1);
+                        petEngine.commit()
+                    }
                 }
             }
         }
     }
-    /*
-} catch (e) {
-    window.alert("Problem loading pet.js " + e)
-}*/
+}
+
+PetExerciseEngine = function(page) {
+    jumpMomentum = 0;
+    jumpY = 100;
+    this.doJump = function() {
+        for(i = 0; i < 300; i++) {
+            setTimeout(jumpOnce, 200 + (i * 20));
+        }
+        //EbyID("petname").innerHTML = "hi";
+    }
+    function jumpOnce() {
+        //EbyID("petname").innerHTML = "hi2";
+        //EbyID("petname").innerHTML = jumpY;
+        jumpMomentum++;
+        jumpY += jumpMomentum;
+        if(jumpY >= 300) {
+            jumpMomentum = -(Math.floor(Math.random() * 5) + 15);
+        }
+        $(page).find("#pet-wrapper-exercise").attr({"style": "padding-top: " + jumpY + "px;"});
+        $(page).find("#ground-exercise").attr({"style": "margin-top: " + (300 - jumpY) + "px;"});
+    }
+}

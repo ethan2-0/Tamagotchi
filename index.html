@@ -24,7 +24,8 @@
         <!--<link rel="terms" href="path/to/terms/of/use.html">-->
         <!--<link rel="privacy" href="path/to/privacy/policy.html">-->
     </head>
-    <body id="thebody" onmousedown="setClick(true)" onmouseup="setClick(false)" ontouchstart="setClick(true); scratchPet(event)" ontouchend="setClick(false)" ontouchmove="scratchPet(event)">
+    <body id="thebody">
+
         <div class="app-page" data-page="no-permission">
             <div class="app-topbar">
                 <div id="no-permission-title" class="app-title">Kik VPet Denied!</div>
@@ -92,15 +93,6 @@
                         }
 
                         var stable = currentUser.getStable()
-                        var stableListener = new function() {
-                            this.onPetAdded = function(src, pet) {
-                                pet.addListener()
-                            }
-                            this.onPetRemoved = function(src, petId) {
-                            }
-                        }()
-                        stable.addListener(stableListener)
-
                         var petId = stable.add({
                             health: 100,
                             hunger: 100,
@@ -156,7 +148,7 @@
                 <br/>
                 <br/>
                 <center id="pet-wrapper">
-                    <div ><div id="pet-image" class="pet-image happy" ontouchmove="scratchPet(event)"></div></div>
+                    <div ><div id="pet-image" class="pet-image happy"></div></div>
                     <span id="petname"></span>
                 </center>
                 <div id="other-petpage-stuff">
@@ -216,6 +208,11 @@
         <script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
         <!-- My code -->
         <script type="text/javascript">
+            function zap() {
+                window.alert("zap")
+            }
+            var currentUser = null
+            var petEngine = null
             App.populator("creator", function(page) {
                 $(page)
                     .find("#createButton")
@@ -331,6 +328,7 @@
             App.populator("Pet", function(page, args) {
                 var currentPet = null
                 var friend = null
+                var petRenderingEngine = new PetRenderingEngine(page, petEngine)
                 var petListener = new function() {
                         this.onProperty = function(src, pname, value, isNew) {
                             var petId = src.getId()
@@ -394,21 +392,36 @@
                         friend.getStable().removeListener(stableListener)
                     }
                 });
+                petRenderingEngine.populateFoodImage(foodItems.chocolateBar);
+                petRenderingEngine.populateFoodImage(foodItems.steak);
+                window.addEventListener("resize", new function() {petRenderingEngine.resizeCanvas()}, false);
+                petRenderingEngine.resizeCanvas();
                 $(page)
                     .on("appShow", function() {
-                        populateFoodImage(foodItems.chocolateBar);
-                        populateFoodImage(foodItems.steak);
-                        EbyID("petname").innerHTML = localStorage.getItem("petname");
-                        window.addEventListener("resize", resizeCanvas, false);
-                        resizeCanvas();
+                        // TODO: should be event driven
+                        if (petEngine != null) {
+                            $(page).find("#petname").innerHTML = petEngine.getItem("petname");
+                        }
                         //Note: For circle on canvas,
                         //context.arc(xpos, ypos, radius, 0, 2 * Math.PI)
                     })
+                    /*
+                $(page)
+                    .find("#pet-image")
+                    .on("touchmove", function(evt) {                        
+                        petRenderingEngine.scratchPet(evt)
+                    })*/
+                $(page)
+                    .find("#pet-canvas")
+                    .on("touchmove", function(evt) {                        
+                        petRenderingEngine.scratchPet(evt)
+                    })
+                    /*
                 $(page)
                     .find("#pet-stable-image")
                     .on("click", function() {
                         loadPage("stable-page");
-                    })
+                    })*/
                 $(page)
                     .find("#pet-friends-image")
                     .on("click", function() {
@@ -424,24 +437,26 @@
                 $(page)
                     .find("#dance-button")
                     .on("click", function() {
-                        doDance();
+                        petRenderingEngine.doDance();
                     });
                 $(page)
                     .find("#jump-button")
                     .on("click", function() {
-                        if(foodTimeout <= 0) {
-                            foodTimeout = 15;
-                            App.load("exercise-page", {pet: currentPet});
+                        if(petRenderingEngine.foodTimeout <= 0) {
+                            petRenderingEngine.foodTimeout = 15;
+                            App.load("exercise-page", {pet: currentPet, petRenderingEngine: petRenderingEngine});
                         } else {
-                            setPetError("Please wait " + foodTimeout + " seconds.");
+                            petRenderingEngine.setPetError("Please wait " + petRenderingEngine.foodTimeout + " seconds.");
                         }
                     });
             });
             App.populator("exercise-page", function(page, args) {
+                var petExerciseEngine = new PetExerciseEngine(page)
                 if (args["pet"] == null) {
                     throw "Missing pet arg"
                 }
                 var pet = args.pet
+                var petRenderingEngine = args.petRenderingEngine
                 $(page)
                     .find("#back-image-exercise")
                     .on("click", function() {
@@ -449,10 +464,14 @@
                             //Do nothing
                         });
                     });
-                doJump();
+                petExerciseEngine.doJump();
                 setTimeout(function() {
-                    addItem("petWeight", -10);
-                    addItem("petHunger", -8);
+                    if (petEngine == null) {
+                        return
+                    }
+                    petEngine.addItem("petWeight", -10);
+                    petEngine.addItem("petHunger", -8);
+                    petEngine.commit()
                     App.back(function() {
                         //Do nothing
                     });
@@ -552,6 +571,7 @@
                         currentUser.setProperty("fullName", kikUser.fullName)
                         currentUser.setProperty("pic", kikUser.pic)
                         currentUser.setProperty("thumbnail", kikUser.thumbnail)
+                        petEngine = new PetEngine(currentUser)
                         try {
                             App.restore()
                         } catch (e) {
@@ -583,7 +603,9 @@
                 currentUser.setProperty("lastName", "White")
                 currentUser.setProperty("fullName", "Ethan White")
                 currentUser.setProperty("pic", "images/undecidedface.png")
-                currentUser.setProperty("thumbnail", "images/sadface.png")                
+                currentUser.setProperty("thumbnail", "images/sadface.png")
+                petEngine = new PetEngine(currentUser)
+
                 loadPage("stable-page")
             }
 
