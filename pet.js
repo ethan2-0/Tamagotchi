@@ -38,30 +38,55 @@
     }
     foodTimeout = 0;
     //Note that particles only work in the area above the bars, etc. This is to fix issue #1. See the docs for this page for more info.
-    function Particle(color, size, gravity, x, y) {
+    function Particle(color, size, gravity, x, y, type, permanent) {
+        if(permanent == null) {
+            permanent = false;
+        }
         this.size = size;
         this.color = color;
         this.gravity = gravity;
         this.left = x;
         this.top = y;
         this.ticksLived = 0;
-        //Actually create the element
+        this.permanent = permanent;
+        this.type = type;
+        //Add functions
         this.draw = function() {
             canvas = EbyID("pet-canvas");
             context = canvas.getContext("2d");
+            /*context.fillStyle = this.color;
+            context.fillRect(this.left, this.top, this.size, size);*/
+            context.beginPath();
+            context.arc(this.left, this.top, this.size, 0, 2 * Math.PI, false);
             context.fillStyle = this.color;
-            context.fillRect(this.left, this.top, this.size, size);
+            context.fill();
+            context.lineWidth = 1;
+            context.strokeStyle = this.color;
+            context.stroke();
         };
         this.update = function() {
             this.top += this.gravity;
             this.draw();
             this.ticksLived++;
-            if(this.ticksLived > 20) {
-                index = particleList.indexOf(this);
-                particleList.splice(index, 1);
+            if(this.ticksLived > 20 && !this.permanent) {
+                this.destroy();
             }
         };
+        this.destroy = function() {
+            index = particleList.indexOf(this);
+            particleList.splice(index, 1);
+        }
+        //Add to the particle list
         particleList.push(this);
+    }
+    function createDropping() {
+        //Select position
+        x = randomInteger(window.innerWidth);
+        y = randomInteger(250) + 50;
+        p = new Particle("#a52a2a", 30, 0, x, y, "dropping", true);
+    }
+    function randomInteger(max) {
+        return Math.floor(Math.random() * max)
     }
     //Occurs when a food item is clicked on the page.
     function selectFoodItem(name) {
@@ -211,6 +236,9 @@
         }
         changeThePet();
         setTimeout(tick, 1000);
+        if(randomInteger(1000) > 998) {
+            createDropping();
+        }
     }
     setTimeout(tick, 1000);
     function renderingTick() {
@@ -246,13 +274,25 @@
     petScratches = 0;
     function scratchPet(evt) {
         petScratches++;
-        if(petScratches % 6 == 0) {
-            touch = evt.changedTouches[0];
+        touch = evt.changedTouches[0];
+        for(i = 0; i < particleList.length; i++) {
+            particle = particleList[i];
+            if(particle.type == "dropping") {
+                x = touch.clientX;
+                y = touch.clientY;
+                if((x > particle.left - particle.size) && (x - (particle.left - particle.size) < particle.size * 2)) {
+                    if((y > particle.top - particle.size) && (y - (particle.top - particle.size) < particle.size * 2)) {
+                        particle.destroy();
+                    }
+                }
+            }
+        }
+        if(petScratches % 8 == 0) {
             boundingRect = EbyID("pet-image").getBoundingClientRect();
             if((touch.clientX - boundingRect.left < 128 && touch.clientX - boundingRect.left > 0) &&
                 (touch.clientY - boundingRect.top < 128 && touch.clientY - boundingRect.top > 0)) {
-                p = new Particle("#464646", 5, 1, touch.clientX, touch.clientY);
-                if(petScratches % 16 == 0 && getItem("petHappiness") / 1 < 100) {
+                p = new Particle("#464646", 2, 1, touch.clientX, touch.clientY, "scratch");
+                if(petScratches % 32 == 0 && getItem("petHappiness") / 1 < 100) {
                     addItem("petHappiness", 1);
                 }
             }

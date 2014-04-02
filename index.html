@@ -24,7 +24,7 @@
         <!--<link rel="terms" href="path/to/terms/of/use.html">-->
         <!--<link rel="privacy" href="path/to/privacy/policy.html">-->
     </head>
-    <body id="thebody" onmousedown="setClick(true)" onmouseup="setClick(false)" ontouchstart="setClick(true)" ontouchend="setClick(false)" ontouchmove="scratchPet(event)">
+    <body id="thebody" onmousedown="setClick(true)" onmouseup="setClick(false)" ontouchstart="setClick(true); scratchPet(event)" ontouchend="setClick(false)" ontouchmove="scratchPet(event)">
         <div class="app-page" data-page="no-permission">
             <div class="app-topbar">
                 <div id="no-permission-title" class="app-title">Kik VPet Denied!</div>
@@ -396,6 +396,9 @@
                 });
                 $(page)
                     .on("appShow", function() {
+                        populateFoodImage(foodItems.chocolateBar);
+                        populateFoodImage(foodItems.steak);
+                        EbyID("petname").innerHTML = localStorage.getItem("petname");
                         window.addEventListener("resize", resizeCanvas, false);
                         resizeCanvas();
                         //Note: For circle on canvas,
