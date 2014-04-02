@@ -1,6 +1,13 @@
 /*
     Petengine.js: Handles pet updating and animation.
 */
+sick = false;
+function getSick() {
+    return sick;
+}
+function setSick(value) {
+    sick = value;
+}
 function changeThePet() {
     if(getItem("petHealth") > 0) {
         addItem("petAge", 1);
@@ -68,6 +75,14 @@ function changeThePet() {
             }
             if(getItem("petHappiness") > 100) {
                 localStorage.setItem("petHappiness", 100);
+            }
+            //Sickness
+            //Edited on commit before overhaul, will cause conflict. --Ethan
+            if(true/*randomInteger(500) <= numDroppings()*/) {
+                sick = true;
+            }
+            if(sick) {
+                addItem("petHealth", -1);
             }
         }
         if(age % 1000 == 0) {

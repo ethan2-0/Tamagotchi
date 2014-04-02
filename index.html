@@ -186,6 +186,8 @@
                     <div class="normal-margin">
                         <div class="app-button" id="dance-button">Dance</div>
                         <div class="app-button" id="jump-button">Exercise</div>
+                        <!-- Edited before big overhaul, will cause conflict. Ethan -->
+                        <div class="app-button" id="medecine-button">Medecine</div>
                     </div>
                     <div class="app-section" id="food-section">
                         <center>Feed your pet</center>
@@ -434,6 +436,17 @@
                             App.load("exercise-page", {pet: currentPet});
                         } else {
                             setPetError("Please wait " + foodTimeout + " seconds.");
+                        }
+                    });
+                //Will probably cause conflict --Ethan
+                //The variable "sick" in here needs to be from the pet engine object.
+                $(page)
+                    .find("#medecine-button")
+                    .on("click", function() {
+                        if(getSick()) {
+                            setSick(false);
+                        } else {
+                            addItem("petHealth", -10);
                         }
                     });
             });
