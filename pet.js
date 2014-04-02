@@ -1,6 +1,8 @@
 PetRenderingEngine = function(page, pet) {
     thiz = this
-    
+    this.isForeground = false
+    this.lastVisited = null
+
     this.getItem = function(name) {
         return petData[name]
     }
@@ -24,6 +26,24 @@ PetRenderingEngine = function(page, pet) {
         }
     }
 
+    this.foreground = function() {
+        this.isForeground = true
+        var toTick = 1
+        if (this.lastVisited != null) {
+            toTick = (new Date().getTime() - this.lastVisited) / 1000
+        }
+        // Foregroundable
+        setTimeout(renderingTick, 100);
+        // Foregroundable
+        setTimeout(function() {tick(toTick)}, 1000);
+    }
+
+    this.background = function() {
+        this.isForeground = false
+        this.setItem("lastVisited", new Date().getTime())
+        this.commit()
+    }
+
     var petData = {}
     var petListener = new function() {
         this.onProperty = function(src, pname, value, isNew) {
@@ -40,6 +60,8 @@ PetRenderingEngine = function(page, pet) {
                 updateProgressBar($(page).find("#weight-bar")[0], value, "black");
             } else if (pname == "petAge") {
                 $(page).find("#pet-age").innerHTML = value;
+            } else if (pname == "lastVisited") {
+                thiz.lastVisited = value;
             }
         }
         this.onDeleted = function(src) {
@@ -153,7 +175,7 @@ PetRenderingEngine = function(page, pet) {
     this.setSick = function(value) {
         sick = value;
     }
-    this.changeThePet = function() {
+    this.changeThePet = function(totalTicks) {
         if (this.getItem("petHealth") == 0) {
             return
         }
@@ -163,52 +185,52 @@ PetRenderingEngine = function(page, pet) {
             if (age % 500 == 0) {
                 hunger = this.getItem("petHunger");
                 if (hunger < 40) {
-                    this.addItem("petHealth", -1);
+                    this.addItem("petHealth", -totalTicks);
                 }
                 if (hunger < 25) {
-                    this.addItem("petHealth", -1);
+                    this.addItem("petHealth", -totalTicks);
                 }
                 if (hunger < 15) {
-                    this.addItem("petHealth", -1);
+                    this.addItem("petHealth", -totalTicks);
                 }
                 if (hunger < 8) {
-                    this.addItem("petHealth", -1);
+                    this.addItem("petHealth", -totalTicks);
                 }
                 if (hunger > 70) {
-                    this.addItem("petHappiness", 2);
+                    this.addItem("petHappiness", totalTicks * 2);
                 }
                 happiness = this.getItem("petHappiness");
                 if (happiness < 40) {
-                    this.addItem("petHealth", -1);
+                    this.addItem("petHealth", -totalTicks);
                 }
                 if (happiness < 20) {
-                    this.addItem("petHealth", -1);
+                    this.addItem("petHealth", -totalTicks);
                 }
                 if (happiness < 10) {
-                    this.addItem("petHealth", -1);
+                    this.addItem("petHealth", -totalTicks);
                 }
                 if (happiness < 5) {
-                    this.addItem("petHealth", -1);
+                    this.addItem("petHealth", -totalTicks);
                 }
 
                 if (happiness > 70) {
-                    this.addItem("petHealth", 2);
+                    this.addItem("petHealth", totalTicks * 2);
                 }
                 if (this.getItem("petHealth") / 1 > 100) {
                     this.setItem("petHealth", 100);
                 }
                 health = this.getItem("petHealth");
                 if (health < 40) {
-                    this.addItem("petHealth", -1);
-                    this.addItem("petHappiness", -2);
+                    this.addItem("petHealth", -totalTicks);
+                    this.addItem("petHappiness", -totalTicks * 2);
                 }
                 if (health < 15) {
-                    this.addItem("petHealth", -1);
-                    this.addItem("petHappiness", -2);
+                    this.addItem("petHealth", -totalTicks);
+                    this.addItem("petHappiness", -totalTicks * 2);
                 }
                 if (health < 8) {
-                    this.addItem("petHealth", -1);
-                    this.addItem("petHappiness", -2);
+                    this.addItem("petHealth", -totalTicks);
+                    this.addItem("petHappiness", -totalTicks * 2);
                 }
                 if (this.getItem("petHappiness") > 100) {
                     this.setItem("petHappiness", 100);
@@ -220,12 +242,12 @@ PetRenderingEngine = function(page, pet) {
                     sick = true;
                 }
                 if(sick) {
-                    this.addItem("petHealth", -1);
+                    this.addItem("petHealth", -totalTicks);
                 }
             }
             if (age % 1000 == 0) {
-                this.addItem("petHappiness", -1);
-                this.addItem("petHunger", -1);
+                this.addItem("petHappiness", -totalTicks);
+                this.addItem("petHunger", -totalTicks);
             }
             this.commit()
         }
@@ -337,7 +359,6 @@ PetRenderingEngine = function(page, pet) {
         s += '</tr></table>';
         display.innerHTML = s;
     }
-    setTimeout(renderingTick, 50);
     this.resizeCanvas = function() {
         canvas = $(page).find("#pet-canvas")[0];
         canvas.width = window.innerWidth;
@@ -345,21 +366,29 @@ PetRenderingEngine = function(page, pet) {
         //canvas.height = window.innerHeight;
         canvas.height = 325;
     }
-    function tick() {
+    function tick(totalTicks) {
+        if (!thiz.isForeground) {
+            return
+        }
+        if (totalTicks == null) {
+            totalTicks = 1
+        }
         //alert(document.getElementById("health-bar"));
         //alert(App.getStack()[App.getStack().length - 1]);
         if(thiz.foodTimeout > 0) {
             thiz.foodTimeout--;
         }
-        thiz.changeThePet();
+        thiz.changeThePet(totalTicks);
         setTimeout(tick, 1000);
         if(randomInteger(1000) > 998) {
             createDropping();
         }
     }
-    setTimeout(tick, 1000);
     function renderingTick() {
-        setTimeout(renderingTick, 50);
+        if (!thiz.isForeground) {
+            return
+        }
+        setTimeout(renderingTick, 100);
         //Particles
         canvas = $(page).find("#pet-canvas")[0];
         if (canvas == null) {

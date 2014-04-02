@@ -100,6 +100,7 @@
                             petWeight: 50,
                             petAge: 0,
                             petBirthday: new Date(),
+                            lastVisited: new Date().getTime(),
                             name: name
                         })
                         var stableListener = new function() {
@@ -213,9 +214,6 @@
         <script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
         <!-- My code -->
         <script type="text/javascript">
-            function zap() {
-                window.alert("zap")
-            }
             var currentUser = null
             var activePet = null
             App.populator("creator", function(page) {
@@ -253,7 +251,7 @@
                             var petId = src.getId()
                             try {
                                 if (pname == "name") {
-                                    $("#stable_div_name_" + petId).text(value)
+                                    $(page).find("#stable_div_name_" + petId).text(value)
                                 }
                             } catch (e) {
                                 window.alert("stableListener.onProperty " + e)
@@ -359,6 +357,7 @@
                         }
                         currentPet = pet
                         petRenderingEngine = new PetRenderingEngine(page, currentPet)
+                        petRenderingEngine.foreground()
                         currentPet.addListener(petListener)
                         window.addEventListener("resize", new function() {petRenderingEngine.resizeCanvas()}, false);
                         petRenderingEngine.resizeCanvas();
@@ -389,6 +388,7 @@
                 } else if (args["pet"] != null) {
                     currentPet = args.pet
                     petRenderingEngine = new PetRenderingEngine(page, currentPet)
+                    petRenderingEngine.foreground()
                     currentPet.addListener(petListener)
                     window.addEventListener("resize", new function() {petRenderingEngine.resizeCanvas()}, false);
                     petRenderingEngine.resizeCanvas();
@@ -404,12 +404,21 @@
                         friend.removeListener(friendListener)
                         friend.getStable().removeListener(stableListener)
                     }
+                    if (petRenderingEngine != null) {
+                        petRenderingEngine.background()
+                    }
+                });
+                $(page).on('appHide', function () {
+                    if (petRenderingEngine != null) {
+                        petRenderingEngine.background()
+                    }
                 });
                 $(page)
                     .on("appShow", function() {
                         // TODO: should be event driven
                         if (petRenderingEngine != null) {
                             $(page).find("#petname").innerHTML = petRenderingEngine.getItem("petname");
+                            petRenderingEngine.foreground()
                         }
                         //Note: For circle on canvas,
                         //context.arc(xpos, ypos, radius, 0, 2 * Math.PI)
@@ -425,12 +434,11 @@
                     .on("touchmove", function(evt) {                        
                         petRenderingEngine.scratchPet(evt)
                     })
-                    /*
                 $(page)
                     .find("#pet-stable-image")
                     .on("click", function() {
                         loadPage("stable-page");
-                    })*/
+                    })
                 $(page)
                     .find("#pet-friends-image")
                     .on("click", function() {
