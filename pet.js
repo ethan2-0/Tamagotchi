@@ -1,4 +1,55 @@
-PetRenderingEngine = function(page, petEngine) {
+PetRenderingEngine = function(page, pet) {
+    thiz = this
+    
+    this.getItem = function(name) {
+        return petData[name]
+    }
+
+    this.setItem = function(name, value) {
+        petData[name] = value
+    }
+
+    this.addItem = function(name, amount) {
+        // TODO: set
+        var old = petData[name]
+        if (old == null) {
+            old = 0
+        }
+        petData[name] = (old / 1) + amount
+    }
+
+    this.commit = function() {
+        if (pet != null) {
+            pet.update(petData)
+        }
+    }
+
+    var petData = {}
+    var petListener = new function() {
+        this.onProperty = function(src, pname, value, isNew) {
+            petData[pname] = value
+            if (pname == "petHealth") {
+                $(page).find("#pet-image").attr({"class": "pet-image " + getHappiness()});
+                updateProgressBar($(page).find("#health-bar")[0], value);
+            } else if (pname == "petHunger") {
+                updateProgressBar($(page).find("#hunger-bar")[0], value);
+            } else if (pname == "petHappiness") {
+                $(page).find("#pet-image").attr({"class": "pet-image " + getHappiness()});
+                updateProgressBar($(page).find("#happiness-bar")[0], value);
+            } else if (pname == "petWeight") {
+                updateProgressBar($(page).find("#weight-bar")[0], value, "black");
+            } else if (pname == "petAge") {
+                $(page).find("#pet-age").innerHTML = value;
+            }
+        }
+        this.onDeleted = function(src) {
+            // TODO
+        }
+    }()
+    pet.addListener(petListener)
+
+    danceEngine = new PetDanceEngine()
+
     //Define food items
     foodItems = new Object;
     foodItemList = new Array();
@@ -95,15 +146,99 @@ PetRenderingEngine = function(page, petEngine) {
         }
         return num;
     }
+    sick = false;
+    this.getSick = function() {
+        return sick;
+    }
+    this.setSick = function(value) {
+        sick = value;
+    }
+    this.changeThePet = function() {
+        if (this.getItem("petHealth") == 0) {
+            return
+        }
+        if(this.getItem("petHealth") > 0) {
+            this.addItem("petAge", 1);
+            age = this.getItem("petAge");
+            if (age % 500 == 0) {
+                hunger = this.getItem("petHunger");
+                if (hunger < 40) {
+                    this.addItem("petHealth", -1);
+                }
+                if (hunger < 25) {
+                    this.addItem("petHealth", -1);
+                }
+                if (hunger < 15) {
+                    this.addItem("petHealth", -1);
+                }
+                if (hunger < 8) {
+                    this.addItem("petHealth", -1);
+                }
+                if (hunger > 70) {
+                    this.addItem("petHappiness", 2);
+                }
+                happiness = this.getItem("petHappiness");
+                if (happiness < 40) {
+                    this.addItem("petHealth", -1);
+                }
+                if (happiness < 20) {
+                    this.addItem("petHealth", -1);
+                }
+                if (happiness < 10) {
+                    this.addItem("petHealth", -1);
+                }
+                if (happiness < 5) {
+                    this.addItem("petHealth", -1);
+                }
+
+                if (happiness > 70) {
+                    this.addItem("petHealth", 2);
+                }
+                if (this.getItem("petHealth") / 1 > 100) {
+                    this.setItem("petHealth", 100);
+                }
+                health = this.getItem("petHealth");
+                if (health < 40) {
+                    this.addItem("petHealth", -1);
+                    this.addItem("petHappiness", -2);
+                }
+                if (health < 15) {
+                    this.addItem("petHealth", -1);
+                    this.addItem("petHappiness", -2);
+                }
+                if (health < 8) {
+                    this.addItem("petHealth", -1);
+                    this.addItem("petHappiness", -2);
+                }
+                if (this.getItem("petHappiness") > 100) {
+                    this.setItem("petHappiness", 100);
+                }
+                //Sickness
+                //Edited on commit before overhaul, will cause conflict. --Ethan
+                //if(randomInteger(500) <= numDroppings()) {
+                if(true) {
+                    sick = true;
+                }
+                if(sick) {
+                    this.addItem("petHealth", -1);
+                }
+            }
+            if (age % 1000 == 0) {
+                this.addItem("petHappiness", -1);
+                this.addItem("petHunger", -1);
+            }
+            this.commit()
+        }
+    }
     //Occurs when a food item is clicked on the page.
     function selectFoodItem(name) {
         var foodItemEl = $(page).find("#food-item-" + name)[0]
         if(foodItemEl.getAttribute("style") == "" || foodItemEl.getAttribute("style") == null) {
-            if (this.foodTimeout <= 0) {
+            if (thiz.foodTimeout <= 0) {
                 foodItemEl.setAttribute("style", "background-color: black;");
             } else {
                 foodItemEl.setAttribute("style", "background-color: red;");
-                this.setPetError("Please wait " + this.foodTimeout + " seconds.");
+                thiz.setPetError("Please wait " + thiz.foodTimeout + " seconds.");
                 setTimeout(function() {
                     foodItemEl.setAttribute("style", "");
                 }, 100);
@@ -116,7 +251,7 @@ PetRenderingEngine = function(page, petEngine) {
                 }
             }
             feedPet(foodItem);
-            this.foodTimeout = 10;
+            thiz.foodTimeout = 10;
             setTimeout(function() {
                 foodItemEl.setAttribute("style", "");
             }, 100);
@@ -125,24 +260,24 @@ PetRenderingEngine = function(page, petEngine) {
     //F_C feedPet
     function feedPet(item) {
         //throw ((getItem("petWeight") / 1) + item.weight);
-        if((petEngine.getItem("petWeight") / 1) + item.weight > 100) {
-            petEngine.setItem("petWeight", 100);
-            petEngine.addItem("petHealth", -(Math.floor(item.weight / 2)));
+        if((thiz.getItem("petWeight") / 1) + item.weight > 100) {
+            thiz.setItem("petWeight", 100);
+            thiz.addItem("petHealth", -(Math.floor(item.weight / 2)));
         } else {
-            petEngine.addItem("petWeight", item.weight);
-            petEngine.addItem("petHealth", -(Math.floor(item.weight / 2)));
+            thiz.addItem("petWeight", item.weight + 0);
+            thiz.addItem("petHealth", -(Math.floor(item.weight / 2)));
         }
-        if((petEngine.getItem("petHunger") / 1) + item.hunger > 100) {
-            petEngine.setItem("petHunger", 100);
+        if((thiz.getItem("petHunger") / 1) + item.hunger > 100) {
+            thiz.setItem("petHunger", 100);
         } else {
-            petEngine.addItem("petHunger", item.hunger);
+            thiz.addItem("petHunger", item.hunger);
         }
-        if((petEngine.getItem("petHappiness") / 1) + item.happiness > 100) {
-            petEngine.setItem("petHappiness", 100);
+        if((thiz.getItem("petHappiness") / 1) + item.happiness > 100) {
+            thiz.setItem("petHappiness", 100);
         } else {
-            petEngine.addItem("petHappiness", item.happiness);
+            thiz.addItem("petHappiness", item.happiness);
         }
-        petEngine.commit()
+        thiz.commit()
     }
     errorWillBeCleared = false;
     this.setPetError = function(error) {
@@ -166,10 +301,10 @@ PetRenderingEngine = function(page, petEngine) {
     //Gets the class corresponding to the happiness "happiness" and health "health". Note that health is used just for the dead face.
     function getHappiness(happiness, health) {
         if(happiness == null) {
-            happiness = petEngine.getItem("petHappiness");
+            happiness = thiz.getItem("petHappiness");
         }
         if(health == null) {
-            health = petEngine.getItem("petHealth");
+            health = thiz.getItem("petHealth");
         }
         if(health < 5) {
             return "dead";
@@ -184,20 +319,17 @@ PetRenderingEngine = function(page, petEngine) {
     }
     this.doDance = function() {
         $(page).find("#other-petpage-stuff").attr({"style": "visibility: hidden;"});
-        petEngine.dance($(page).find("#pet-wrapper"));
+        danceEngine.dance($(page).find("#pet-wrapper"));
         setTimeout(function() {
             $(page).find("#other-petpage-stuff").attr({"style": ""});
         }, 241 * 20);
     }
-    function creatorLater() {
-        loadPage("creator");
-    }
     function populatePetDisplay(display, name, happiness, health) {
         if(health == null) {
-            health = petEngine.getItem("petHealth");
+            health = thiz.getItem("petHealth");
         }
         if(happiness == null) {
-            happiness = petEngine.getItem("petHappiness");
+            happiness = thiz.getItem("petHappiness");
         }
         s =  '<table><tr>';
         s += '    <td class="pet-display-item"><div class="pet-image ' + getHappiness(happiness, health) + '"></div></td>\n'
@@ -216,10 +348,10 @@ PetRenderingEngine = function(page, petEngine) {
     function tick() {
         //alert(document.getElementById("health-bar"));
         //alert(App.getStack()[App.getStack().length - 1]);
-        if(this.foodTimeout > 0) {
-            this.foodTimeout--;
+        if(thiz.foodTimeout > 0) {
+            thiz.foodTimeout--;
         }
-        petEngine.changeThePet();
+        thiz.changeThePet();
         setTimeout(tick, 1000);
         if(randomInteger(1000) > 998) {
             createDropping();
@@ -237,15 +369,6 @@ PetRenderingEngine = function(page, petEngine) {
         context.clearRect("0", "0", "1920", "1080"); //1920X1080 is overkill, but it won't be in the future :)
         for(i = 0; i < particleList.length; i++) {
             particleList[i].update();
-        }
-        //Updating the pet page
-        if(getPageName() == "Pet") {
-            updateProgressBar($(page).find("#health-bar")[0], petEngine.getItem("petHealth"));
-            updateProgressBar($(page).find("#hunger-bar")[0], petEngine.getItem("petHunger"));
-            updateProgressBar($(page).find("#happiness-bar")[0], petEngine.getItem("petHappiness"));
-            updateProgressBar($(page).find("#weight-bar")[0], petEngine.getItem("petWeight"), "black");
-            $(page).find("#pet-age").innerHTML = petEngine.getItem("petAge");//Math.floor((new Date().getTime() - localStorage.getItem("petBirthday").getTime()) / 60) + " minutes";
-            $(page).find("#pet-image").attr({"class": "pet-image " + getHappiness()});
         }
         //Updating the exercise page
         if(getPageName() == "exercise-page") {
@@ -274,15 +397,17 @@ PetRenderingEngine = function(page, petEngine) {
                 (touch.clientY - boundingRect.top < 128 && touch.clientY - boundingRect.top > 0)) {
                 p = new Particle("#464646", 2, 1, touch.clientX, touch.clientY, "scratch");
                 if(petScratches % 32 == 0) {
-                    var xx = petEngine.getItem("petHappiness") / 1
+                    var xx = this.getItem("petHappiness") / 1
                     if (xx < 100) {
-                        petEngine.addItem("petHappiness", 1);
-                        petEngine.commit()
+                        this.addItem("petHappiness", 1);
+                        this.commit()
                     }
                 }
             }
         }
     }
+    this.populateFoodImage(foodItems.chocolateBar);
+    this.populateFoodImage(foodItems.steak);
 }
 
 PetExerciseEngine = function(page) {
@@ -305,4 +430,68 @@ PetExerciseEngine = function(page) {
         $(page).find("#pet-wrapper-exercise").attr({"style": "padding-top: " + jumpY + "px;"});
         $(page).find("#ground-exercise").attr({"style": "margin-top: " + (300 - jumpY) + "px;"});
     }
+}
+
+PetDanceEngine = function() {
+    danceImage = null;
+    x = 0;
+    y = 0;
+    direction = "left";
+    directionTime = 5;
+    speed = 2;
+    this.dance = function(image) {
+        danceImage = image;
+        for(i = 0; i < 240; i++) {
+            setTimeout(this.danceOnce, i * 20);
+        }
+        setTimeout(function() {
+            danceImage.attr({style: ""});
+            x = 0;
+            y = 0;
+        }, 241 * 20);
+    }
+    this.danceOnce = function() {
+        directionTime--;
+        if(directionTime <= 0) {
+            r = Math.floor(Math.random() * 5);
+            if(r == 1) {
+                direction = "left";
+            } else if(r == 2) {
+                direction = "right";
+            } else if(r == 3) {
+                direction = "up";
+            } else {
+                direction = "down";
+            }
+            directionTime = Math.floor(Math.random() * 20);
+            speed = Math.floor(directionTime / 4);
+        }
+        if(directionTime % 5 == 0) {
+            speed--;
+        }
+        if(direction == "left") {
+            x -= speed;
+        } else if(direction == "right") {
+            x += speed;
+        } else if(direction == "up") {
+            y -= speed;
+        } else if(direction == "down") {
+            y += speed;
+        }
+        s = "padding-";
+        if(x <= 0) {
+            s += "right";
+        } else {
+            s += "left";
+        }
+        s += ": " + Math.abs(x) + "px; padding-";
+        if(y <= 0) {
+            s += "bottom";
+        } else {
+            s += "top";
+        }
+        s += ": " + Math.abs(y) + "px;";
+        danceImage.attr({style: s});
+    }
+
 }

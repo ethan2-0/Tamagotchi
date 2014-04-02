@@ -61,76 +61,78 @@ PetEngine = function(user) {
         if (this.getItem("petHealth") == 0) {
             return
         }
-    if(getItem("petHealth") > 0) {
-        this.addItem("petAge", 1);
-        age = this.getItem("petAge");
-        if (age % 500 == 0) {
-            hunger = this.getItem("petHunger");
-            if (hunger < 40) {
-                this.addItem("petHealth", -1);
-            }
-            if (hunger < 25) {
-                this.addItem("petHealth", -1);
-            }
-            if (hunger < 15) {
-                this.addItem("petHealth", -1);
-            }
-            if (hunger < 8) {
-                this.addItem("petHealth", -1);
-            }
-            if (hunger > 70) {
-                this.addItem("petHappiness", 2);
-            }
-            happiness = this.getItem("petHappiness");
-            if (happiness < 40) {
-                this.addItem("petHealth", -1);
-            }
-            if (happiness < 20) {
-                this.addItem("petHealth", -1);
-            }
-            if (happiness < 10) {
-                this.addItem("petHealth", -1);
-            }
-            if (happiness < 5) {
-                this.addItem("petHealth", -1);
-            }
+        if(this.getItem("petHealth") > 0) {
+            this.addItem("petAge", 1);
+            age = this.getItem("petAge");
+            if (age % 500 == 0) {
+                hunger = this.getItem("petHunger");
+                if (hunger < 40) {
+                    this.addItem("petHealth", -1);
+                }
+                if (hunger < 25) {
+                    this.addItem("petHealth", -1);
+                }
+                if (hunger < 15) {
+                    this.addItem("petHealth", -1);
+                }
+                if (hunger < 8) {
+                    this.addItem("petHealth", -1);
+                }
+                if (hunger > 70) {
+                    this.addItem("petHappiness", 2);
+                }
+                happiness = this.getItem("petHappiness");
+                if (happiness < 40) {
+                    this.addItem("petHealth", -1);
+                }
+                if (happiness < 20) {
+                    this.addItem("petHealth", -1);
+                }
+                if (happiness < 10) {
+                    this.addItem("petHealth", -1);
+                }
+                if (happiness < 5) {
+                    this.addItem("petHealth", -1);
+                }
 
-            if (happiness > 70) {
-                this.addItem("petHealth", 2);
+                if (happiness > 70) {
+                    this.addItem("petHealth", 2);
+                }
+                if (this.getItem("petHealth") / 1 > 100) {
+                    activePetData["petHealth"] = 100;
+                }
+                health = this.getItem("petHealth");
+                if (health < 40) {
+                    this.addItem("petHealth", -1);
+                    this.addItem("petHappiness", -2);
+                }
+                if (health < 15) {
+                    this.addItem("petHealth", -1);
+                    this.addItem("petHappiness", -2);
+                }
+                if (health < 8) {
+                    this.addItem("petHealth", -1);
+                    this.addItem("petHappiness", -2);
+                }
+                if (this.getItem("petHappiness") > 100) {
+                    activePetData["petHappiness"] = 100;
+                }
+                //Sickness
+                //Edited on commit before overhaul, will cause conflict. --Ethan
+                //if(randomInteger(500) <= numDroppings()) {
+                if(true) {
+                    sick = true;
+                }
+                if(sick) {
+                    this.addItem("petHealth", -1);
+                }
             }
-            if (this.getItem("petHealth") / 1 > 100) {
-                activePetData["petHealth"] = 100;
+            if (age % 1000 == 0) {
+                this.addItem("petHappiness", -1);
+                this.addItem("petHunger", -1);
             }
-            health = this.getItem("petHealth");
-            if (health < 40) {
-                this.addItem("petHealth", -1);
-                this.addItem("petHappiness", -2);
-            }
-            if (health < 15) {
-                this.addItem("petHealth", -1);
-                this.addItem("petHappiness", -2);
-            }
-            if (health < 8) {
-                this.addItem("petHealth", -1);
-                this.addItem("petHappiness", -2);
-            }
-            if (this.getItem("petHappiness") > 100) {
-                activePetData["petHappiness"] = 100;
-            }
-            //Sickness
-            //Edited on commit before overhaul, will cause conflict. --Ethan
-            if(true/*randomInteger(500) <= numDroppings()*/) {
-                sick = true;
-            }
-            if(sick) {
-                this.addItem("petHealth", -1);
-            }
+            this.commit()
         }
-        if (age % 1000 == 0) {
-            this.addItem("petHappiness", -1);
-            this.addItem("petHunger", -1);
-        }
-        this.commit()
     }
     danceImage = null;
     x = 0;
