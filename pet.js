@@ -86,6 +86,15 @@ PetRenderingEngine = function(page, petEngine) {
     function randomInteger(max) {
         return Math.floor(Math.random() * max)
     }
+    function numDroppings() {
+        num = 0;
+        for(i = 0; i < particleList.length; i++) {
+            if(particleList[i].type == "dropping") {
+                num++;
+            }
+        }
+        return num;
+    }
     //Occurs when a food item is clicked on the page.
     function selectFoodItem(name) {
         var foodItemEl = $(page).find("#food-item-" + name)[0]

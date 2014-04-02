@@ -50,10 +50,18 @@ PetEngine = function(user) {
     }()
     user.addListener(userListener)
 
+    sick = false;
+    this.getSick = function() {
+        return sick;
+    }
+    this.setSick = function(value) {
+        sick = value;
+    }
     this.changeThePet = function() {
         if (this.getItem("petHealth") == 0) {
             return
         }
+    if(getItem("petHealth") > 0) {
         this.addItem("petAge", 1);
         age = this.getItem("petAge");
         if (age % 500 == 0) {
@@ -108,6 +116,14 @@ PetEngine = function(user) {
             }
             if (this.getItem("petHappiness") > 100) {
                 activePetData["petHappiness"] = 100;
+            }
+            //Sickness
+            //Edited on commit before overhaul, will cause conflict. --Ethan
+            if(true/*randomInteger(500) <= numDroppings()*/) {
+                sick = true;
+            }
+            if(sick) {
+                this.addItem("petHealth", -1);
             }
         }
         if (age % 1000 == 0) {
