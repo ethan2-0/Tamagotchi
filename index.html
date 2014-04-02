@@ -249,7 +249,18 @@
                             var petId = src.getId()
                             try {
                                 if (pname == "name") {
-                                    $(page).find("#stable_div_name_" + petId).text(value)
+                                    var els = $(page).find("#stable_div_name_" + petId)
+                                    els.text(value)
+                                    if (activePet != null) {
+                                        var id = activePet.getId()
+                                        if (activePet.getId() == petId) {
+                                            $(page).find("#stable-ul").prepend(
+                                                $(page)
+                                                    .find("#stable_li_" + petId)
+                                                    .addClass("active-pet-row")
+                                            )
+                                        }
+                                    }
                                 }
                             } catch (e) {
                                 window.alert("stableListener.onProperty " + e)
@@ -334,62 +345,16 @@
                 var currentPet = null
                 var friend = null
                 var petRenderingEngine = null
-                var petListener = new function() {
-                        this.onProperty = function(src, pname, value, isNew) {
-                            var petId = src.getId()
-                            try {
-                                if (pname == "name") {
-                                    $(page).find("#petname").innerHTML = value
-                                }
-                            } catch (e) {
-                                window.alert("petListener.onProperty " + e)
-                            }
-                        }
-                        this.onDeleted = function(src) {
-                            // TODO
-                        }
-                }()
-                var stableListener = new function() {
-                    this.onPetAdded = function(src, pet) {
-                        var petId = pet.getId()
-                        if (petId != value) {
-                            return
-                        }
-                        currentPet = pet
-                        petRenderingEngine = new PetRenderingEngine(page, currentPet)
-                        petRenderingEngine.foreground()
-                        currentPet.addListener(petListener)
-                        window.addEventListener("resize", new function() {petRenderingEngine.resizeCanvas()}, false);
-                        petRenderingEngine.resizeCanvas();
-                    }
-                    this.onPetRemoved = function(src, petId) {
-                        // TODO
-                    }
-                }()
-                var friendListener = new function() {
-                    this.onProperty = function(src, pname, value, isNew) {
-                        var petId = src.getId()
-                        try {
-                            if (pname == "activePet") {
-                                friend.getStable().addListener(stableListener)
-                            }
-                        } catch (e) {
-                            window.alert("friendListener.onProperty " + e)
-                        }
-                    }
-                    this.onDeleted = function(src) {
-                        // TODO
-                    }
-                }()
 
                 if (args["friend"] != null) {
                     friend = args.friend
-                    friend.addListener(friendListener)
+                    userUtils.onActivePet(friend, function(pet) {
+                        currentPet = pet
+                    })
                 } else if (args["pet"] != null) {
                     currentPet = args.pet
                     petRenderingEngine = new PetRenderingEngine(page, currentPet)
                     petRenderingEngine.foreground()
-                    currentPet.addListener(petListener)
                     window.addEventListener("resize", new function() {petRenderingEngine.resizeCanvas()}, false);
                     petRenderingEngine.resizeCanvas();
                 } else {
@@ -600,7 +565,7 @@
                         currentUser.setProperty("fullName", kikUser.fullName)
                         currentUser.setProperty("pic", kikUser.pic)
                         currentUser.setProperty("thumbnail", kikUser.thumbnail)
-                        userUtils.onActivePet(currentUser, function(pet) {
+                        userUtils.onActivePet(currentUser, function(user, pet) {
                             activePet = pet
                         })
                         try {
@@ -627,15 +592,15 @@
                     }
                 })
             } else {
-                userStore = new T_FireBase("shannonrnwhite", null)
+                userStore = new T_FireBase("goofy", null)
                 currentUser = userStore.getUser()
-                currentUser.setProperty("username", "shannonrnwhite")
+                currentUser.setProperty("username", "goofy")
                 currentUser.setProperty("firstName", "Shannon")
                 currentUser.setProperty("lastName", "White")
                 currentUser.setProperty("fullName", "Shannon White")
                 currentUser.setProperty("pic", "images/undecidedface.png")
                 currentUser.setProperty("thumbnail", "images/sadface.png")
-                userUtils.onActivePet(currentUser, function(pet) {
+                userUtils.onActivePet(currentUser, function(user, pet) {
                     activePet = pet
                 })
 

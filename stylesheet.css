@@ -94,6 +94,9 @@ div.progressbar-front {
     background-color: rgb(120, 67, 54);
     height: 400px;
 }
+.active-pet-row {
+    background-color: rgb(167, 167, 154);
+}
 .food-image {
     border: 1px solid black;
     margin-right: 5px;
