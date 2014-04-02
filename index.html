@@ -8,7 +8,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
         <!-- My Javascript -->
         <script type="text/javascript" src="script.js"></script>
-        <script type="text/javascript" src="petengine.js"></script>
+        <script type="text/javascript" src="userutils.js"></script>
         <!-- Needed for Kik card functionality -->
         <script src="http://cdn.kik.com/kik/1.0.3/kik.js"></script>
         <meta name="description" content="A Tamagotchi pet written in HTML5. Optimized for Kik Messenger.">
@@ -105,6 +105,9 @@
                         var stableListener = new function() {
                             this.onPetAdded = function(src, pet) {
                                 if (pet.getId() == petId) {
+                                    if (activePet == null) {
+                                        currentUser.setProperty("activePet", petId)
+                                    }
                                     loadPage("Pet", {pet: pet});
                                     // TODO: not reliable
                                     stable.removeListener(stableListener)
@@ -214,6 +217,7 @@
                 window.alert("zap")
             }
             var currentUser = null
+            var activePet = null
             App.populator("creator", function(page) {
                 $(page)
                     .find("#createButton")
@@ -587,6 +591,9 @@
                         currentUser.setProperty("fullName", kikUser.fullName)
                         currentUser.setProperty("pic", kikUser.pic)
                         currentUser.setProperty("thumbnail", kikUser.thumbnail)
+                        userUtils.onActivePet(currentUser, function(pet) {
+                            activePet = pet
+                        })
                         try {
                             App.restore()
                         } catch (e) {
@@ -619,6 +626,9 @@
                 currentUser.setProperty("fullName", "Shannon White")
                 currentUser.setProperty("pic", "images/undecidedface.png")
                 currentUser.setProperty("thumbnail", "images/sadface.png")
+                userUtils.onActivePet(currentUser, function(pet) {
+                    activePet = pet
+                })
 
                 loadPage("stable-page")
             }
