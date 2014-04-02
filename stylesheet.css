@@ -75,7 +75,7 @@ div.progressbar-front {
 }
 .pet-display {
     border: 1px solid black;
-    height: 104px;
+    /*height: 104px;*/
 }
 .pet-display-name {
     margin-left: 25px;
@@ -87,7 +87,7 @@ div.progressbar-front {
 #add-pet {
     text-align: right;
     font-size: 60px;
-    margin-top: 20px;
+    /*margin-top: 20px;*/
     padding-right: 10px;
 }
 #ground-exercise {

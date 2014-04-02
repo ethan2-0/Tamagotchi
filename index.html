@@ -267,8 +267,10 @@
                         if (petList[petId] != null) {
                             return
                         }
-                        li = $("<li></li>").attr({id: "stable_li_" + petId})
-                            .append($("<div></div>").attr({id: "stable_div_name_" + petId}))
+                        li = $("<li></li>")
+                            .attr({id: "stable_li_" + petId})
+                            .append($("<img></img>").attr({src: "images/smileyface.png"}).attr({height: "20", width: "20"}))
+                            .append($("<span></span>").attr({id: "stable_div_name_" + petId}))
                             .click(function() {
                                 App.load("Pet", {pet: pet})
                             })
@@ -551,7 +553,8 @@
                             return
                         }
                         li = $("<li></li>").attr({id: "friends_li_" + userId})
-                            .append($("<div></div>").attr({id: "friends_div_name_" + userId}))
+                            .append($("<img></img>").attr({src: "images/smileyface.png"}).attr({height: "20", width: "20"}))
+                            .append($("<span></span>").attr({id: "friends_div_name_" + userId}))
                             .click(function() {
                                 App.load("Pet", {friend: friend})
                             })
